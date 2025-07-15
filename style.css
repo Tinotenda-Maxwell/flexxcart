@@ -106,8 +106,7 @@ footer {
   text-align: center;
   padding: 20px;
   font-size: 0.9rem;
-  margin-top: auto;
-  bottom: 0;
+  margin-top: 40px;
 }
 
 /* Navigation and dropdowns */
@@ -127,10 +126,9 @@ nav a {
   font-size: 14px;
 }
 
-nav a[href="about_us.html"],
-nav a[href="contact_us.html"] {
-  display: inline-block;
-  width: auto;
+nav a {
+  display: block;
+  margin: 5px 0;
 }
 
 nav a:hover {
@@ -322,7 +320,6 @@ nav a:hover {
 }
 
 @media screen and (min-width: 769px) {
-
   nav a {
     font-size: 20px;  
     padding: 6px 6px; 
