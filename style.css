@@ -39,6 +39,10 @@ nav {
   display: none;
 }
 
+.menu-toggle{
+  width: -20px;
+  margin-left: 5px;
+}
 /* Logo, nav, buttons */
 .header-main {
   display: flex;
@@ -82,7 +86,7 @@ nav {
 #cart-count {
   position: absolute;
   top: -8px;
-  right: -8px;
+  right: -6px;
   background-color: red;
   color: white;
   font-size: 10px;
@@ -304,7 +308,7 @@ nav a:hover {
 
 @media screen and (max-width: 480px) {
   .logo-section h1 {
-    font-size: 25px !important;
+    font-size: 28px !important;
   }
   .login-btn {
     font-size: 14px;
