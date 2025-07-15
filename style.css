@@ -221,6 +221,11 @@ nav a:hover {
   font-size: 0.95rem;
 }
 
+.mobile-search-bar#searchBtn img {
+  width: 32px; !important
+  height: 32px; !important
+}
+
 /* Mobile Menu & Dropdown visibility */
 #mobileMenu,
 #mobileUserMenu {
@@ -261,11 +266,12 @@ nav a:hover {
   .mobile-search-bar {
     display: none;
     flex-direction: row;
+    margin-top: 10px;
     padding: 10px;
   }
   .mobile-search-bar a img {
-    width: 25px;
-    height: 25px;
+    width: 30px;
+    height: 30px;
   }
 
   nav {
@@ -287,6 +293,12 @@ nav a:hover {
   nav .cart-link,
   nav .search-bar {
     display: none !important;
+  }
+}
+@media screen and (max-width: 391px){
+  .mobile-actions .cart-icon-wrapper img {
+    width: 20px;
+    height: 20px;
   }
 }
 
@@ -344,7 +356,7 @@ nav a:hover {
   .cart-icon-wrapper img,
   .dropdown-user img {
     width: 30px;     
-    height: 3opx;
+    height: 30px;
   }
 
   .search-bar input {
