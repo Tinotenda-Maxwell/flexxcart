@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Flexxcart | Saved Addresses</title>
+  <link rel="stylesheet" href="style.css" />
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+  <script type="module" src="shared.js"></script>
+  <script src="inject.js" defer></script>
+  <style>
+    .address-container {
+      width: 90%;
+      max-width: 600px;
+      margin: 15px auto;
+      background-color: #fff;
+      padding: 30px;
+      border-radius: 12px;
+      box-shadow: 0 6px 16px rgba(0, 0, 0, 0.1);
+      min-height: 150px;
+    }
+    .address {
+      border: 1px solid #ccc;
+      padding: 15px 20px;
+      border-radius: 8px;
+      margin-bottom: 20px;
+      position: relative;
+    }
+    .hidden { display: none !important; }
+
+    .address-actions {
+      margin-top: 10px;
+      display: flex;
+      justify-content: flex-end;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+    .address button {
+      padding: 6px 12px;
+      font-size: 0.9rem;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+    }
+    .delete-btn { 
+      background-color: #dc3545; 
+      color: white; 
+      
+    }
+    .default-btn { 
+      background-color: #007bff; 
+      color: white; 
+      
+    }
+
+    .edit-btn { 
+      background-color: #ffc107; 
+      color: #000;
+
+    }
+
+    .tag {
+      background-color: #28a745;
+      color: white;
+      font-size: 0.75rem;
+      padding: 2px 6px;
+      border-radius: 4px;
+      margin-left: 10px;
+    }
+    .no-addresses {
+      text-align: center;
+      color: #555;
+      margin-top: 40px;
+    }
+    .address-form {
+      margin: 10px auto;
+      max-width: 600px;
+      background: #fff;
+      padding: 20px;
+      border-radius: 12px;
+      box-shadow: 0 6px 16px rgba(0, 0, 0, 0.1);
+    }
+    .address-form input {
+      width: 100%;
+      padding: 10px;
+      margin: 10px 0;
+      border: 1px solid #ccc;
+      border-radius: 6px;
+    }
+    .address-form button {
+      background-color: #28a745;
+      color: white;
+      border: none;
+      padding: 10px 20px;
+      border-radius: 6px;
+      cursor: pointer;
+    }
+    @media (max-width: 768px) {
+      .address-container, .address-form {
+        padding: 20px;
+      }
+      .address { font-size: 15px; }
+    }
+    @media (max-width: 480px) {
+      .address-form { 
+        max-width: 300px; 
+      }
+
+      .address-container{
+        max-width: 340px;
+      }
+
+      .address { 
+        font-size: 12px; 
+       }
+
+    }
+  </style>
+</head>
+<body class="auth-loading">
+  <!-- Injected Header -->
+  <div id="header-container"></div>
+
+  <main>
+    <div class="address-container" id="addressList">
+      <h2>Saved Addresses</h2>
+    </div>
+    <div class="no-addresses hidden" id="noAddresses">
+      <p>No saved addresses found.</p>
+    </div>
+    <div class="address-form">
+      <h3 id="formTitle">Add New Address</h3>
+      <input type="text" id="fullName" placeholder="Full Name" />
+      <input type="text" id="phone" placeholder="Phone Number" />
+      <input type="text" id="addressLine" placeholder="Address" />
+      <button id="saveAddressBtn">Save Address</button>
+    </div>
+  </main>
+
+  <!-- Injected Footer -->
+  <div id="footer-container"></div>
+
+  <script type="module">
+    import { db, auth } from './shared.js';
+    import {
+      collection, doc, deleteDoc, getDocs, updateDoc, setDoc
+    } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+    import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+
+    let editingId = null;
+
+    onAuthStateChanged(auth, user => {
+      if (!user) return location.href = "login.html";
+
+      const uid = user.uid;
+      const addressList = document.getElementById("addressList");
+      const noAddresses = document.getElementById("noAddresses");
+      const fullName = document.getElementById("fullName");
+      const phone = document.getElementById("phone");
+      const addressLine = document.getElementById("addressLine");
+      const saveBtn = document.getElementById("saveAddressBtn");
+      const formTitle = document.getElementById("formTitle");
+
+      const loadAddresses = async () => {
+        const snapshot = await getDocs(collection(db, "users", uid, "addresses"));
+        addressList.innerHTML = "<h2>Saved Addresses</h2>";
+
+        if (snapshot.empty) {
+          noAddresses.classList.remove("hidden");
+        } else {
+          noAddresses.classList.add("hidden");
+          snapshot.forEach(docSnap => {
+            const data = docSnap.data();
+            const addressDiv = document.createElement("div");
+            addressDiv.className = "address";
+            addressDiv.innerHTML = `
+              <strong>${data.fullName}</strong> - ${data.phone}<br>
+              ${data.addressLine}
+              ${data.isDefault ? '<span class="tag">Default</span>' : ''}
+              <div class="address-actions">
+                <button class="edit-btn" onclick="editAddress('${docSnap.id}', '${data.fullName}', '${data.phone}', '${data.addressLine}')">Edit</button>
+                <button class="delete-btn" onclick="deleteAddress('${docSnap.id}')">Delete</button>
+                ${!data.isDefault ? `<button class="default-btn" onclick="setDefault('${docSnap.id}')">Set as Default</button>` : ''}
+              </div>
+            `;
+            addressList.appendChild(addressDiv);
+          });
+        }
+      };
+
+      window.editAddress = (id, name, phoneNum, addrLine) => {
+        editingId = id;
+        fullName.value = name;
+        phone.value = phoneNum;
+        addressLine.value = addrLine;
+        formTitle.textContent = "Edit Address";
+        saveBtn.textContent = "Update Address";
+      };
+
+      window.deleteAddress = async (id) => {
+        await deleteDoc(doc(db, "users", uid, "addresses", id));
+        loadAddresses();
+      };
+
+      window.setDefault = async (id) => {
+        const snapshot = await getDocs(collection(db, "users", uid, "addresses"));
+        const updates = snapshot.docs.map(d => updateDoc(d.ref, { isDefault: d.id === id }));
+        await Promise.all(updates);
+        loadAddresses();
+      };
+
+      saveBtn.addEventListener("click", async () => {
+        const name = fullName.value.trim();
+        const phoneVal = phone.value.trim();
+        const addrVal = addressLine.value.trim();
+        if (!name || !phoneVal || !addrVal) return alert("Please fill in all fields");
+
+        const addressData = { fullName: name, phone: phoneVal, addressLine: addrVal, isDefault: false };
+
+        if (editingId) {
+          await setDoc(doc(db, "users", uid, "addresses", editingId), addressData);
+          editingId = null;
+          formTitle.textContent = "Add New Address";
+          saveBtn.textContent = "Save Address";
+        } else {
+          const newDocRef = doc(collection(db, "users", uid, "addresses"));
+          await setDoc(newDocRef, addressData);
+        }
+
+        fullName.value = "";
+        phone.value = "";
+        addressLine.value = "";
+        loadAddresses();
+      });
+
+      loadAddresses();
+    });
+  </script>
+</body>
+</html>

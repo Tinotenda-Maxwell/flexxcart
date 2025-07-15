@@ -1,0 +1,113 @@
+<header>
+  <div class="header-main">
+    <!-- Logo Section -->
+    <div class="logo-section">
+      <img src="logo.png" alt="Flexxcart Logo">
+      <h1><span class="flexx">Flexx</span><span class="cart">cart</span></h1>
+    </div>
+
+    <!-- Desktop Navigation (aligned right) -->
+    <nav class="desktop-nav">
+      <div class="header-right">
+        <!-- Login or User Icon -->
+        <a href="login.html" class="login-btn" id="loginBtn">Login</a>
+        <div class="dropdown-user desktop-user" id="userDropdown" style="display: none;">
+          <img src="user_icon.png" alt="User Icon" id="userIcon">
+          <div class="dropdown-user-content" id="userDropdownContent">
+            <a href="account_details.html">Account Details</a>
+            <a href="saved_address.html">Saved Addresses</a>
+            <a href="orders.html">View Orders</a>
+            <a href="#" onclick="logout()">Logout</a>
+          </div>
+        </div>
+
+        <!-- Navigation Links -->
+        <a href="index.html">Home</a>
+        <div class="dropdown">
+          <a href="shop.html" id="shopLink">Shop</a>
+          <div class="dropdown-content" id="categoryDropdown"></div>
+        </div>
+        <a href="about_us.html">About Us</a>
+        <a href="contact_us.html">Contact Us</a>
+
+        <!-- Cart Icon -->
+        <a href="cart.html" class="cart-link">
+          <div class="cart-icon-wrapper">
+            <img src="cart.png" alt="Cart">
+            <span id="cart-count">0</span>
+          </div>
+        </a>
+
+        <!-- Desktop Search Bar -->
+        <div class="search-bar" style="display:flex; align-items:center; gap:.5rem; margin-left:1rem;">
+          <input
+            type="text"
+            id="searchInput"
+            placeholder="Search for groceries…"
+            style="flex:1; padding:.5rem; border-radius:6px; border:1px solid #ccc;"
+          >
+          <button
+            id="searchBtn"
+            style="background:none; border:none; padding:0;"
+          >
+            <img src="search_icon.png" alt="Search" style="width:1.2rem;">
+          </button>
+        </div>
+
+    </nav>
+
+    <!-- Mobile Actions -->
+    <div class="mobile-actions">
+      <a href="login.html" class="login-btn" id="mobileLoginBtn">Login</a>
+      <div class="dropdown-user mobile-user" id="mobileUserDropdown" style="display: none;">
+        <img src="user_icon.png" alt="User Icon" id="mobileUserIcon">
+        <div class="dropdown-user-content" id="mobileUserMenu">
+          <a href="account_details.html">Account Details</a>
+          <a href="saved_address.html">Saved Addresses</a>
+          <a href="orders.html">View Orders</a>
+          <a href="#" onclick="logout()">Logout</a>
+        </div>
+      </div>
+      <a href="cart.html" class="cart-link">
+        <div class="cart-icon-wrapper">
+          <img src="cart.png" alt="Cart">
+          <span id="cart-count">0</span>
+        </div>
+      </a>
+      <div class="search-toggle" id="searchToggle">
+        <i class="fas fa-search"></i>
+      </div>
+    </div>
+
+    <!-- Hamburger Button -->
+    <button class="menu-toggle" id="menuToggle">☰</button>
+  </div>
+
+  <!-- Mobile Nav -->
+  <nav id="mobileMenu" class="mobile-nav">
+    <a href="index.html">Home</a>
+    <div class="dropdown">
+      <a href="shop.html" id="shopLink">Shop</a>
+      <div class="dropdown-content" id="categoryDropdownMobile"></div>
+    </div>
+    <a href="about_us.html">About Us</a>
+    <a href="contact_us.html">Contact Us</a>
+  </nav>
+
+  <!-- Mobile Search Bar -->
+  <!-- Mobile Search Bar -->
+  <div class="mobile-search-bar" id="mobileSearchBar" style="display: none; align-items: center; padding: 0 1rem;">
+    <input
+      type="text"
+      id="mobileSearchInput"
+      placeholder="Search for groceries…"
+      style="flex: 1; padding: .5rem; border-radius: 6px; border: 1px solid #ccc;"
+    >
+    <button
+      id="mobileSearchBtn"
+      style="background: none; border: none; margin-left: .5rem; padding: 0;"
+    >
+      <img src="search_icon.png" alt="Search" style="width: 1.2rem;">
+    </button>
+  </div>
+</header>

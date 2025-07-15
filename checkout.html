@@ -1,0 +1,420 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Flexxcart | Checkout</title>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+  <script type="module" src="shared.js"></script>
+  <script src="inject.js" defer></script>
+  <style>
+    main {
+      flex: 1;
+    }
+
+    .checkout-container {
+      width: 1100px;
+      margin: 40px auto;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 30px;
+    }
+
+    .card {
+      background-color: white;
+      border-radius: 16px;
+      padding: 20px;
+      box-shadow: 0 8px 20px rgba(0,0,0,0.08);
+      min-width: 0;
+    }
+
+    .card h2 {
+      margin-top: 0;
+      color: #28a745;
+      font-size: 1.4rem;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 10px;
+    }
+
+    th, td {
+      padding: 10px 0;
+      vertical-align: top;
+    }
+
+    th {
+      font-weight: 600;
+      color: #333;
+      text-align: left;
+    }
+
+    td img {
+      width: 40px;
+      height: 40px;
+      object-fit: cover;
+      margin-right: 10px;
+      vertical-align: middle;
+      border-radius: 6px;
+    }
+
+    td:nth-child(2), td:nth-child(3), td:nth-child(4),
+    th:nth-child(2), th:nth-child(3), th:nth-child(4) {
+      text-align: center;
+    }
+
+    td:nth-child(3) { padding-left: 60px; }
+    td:nth-child(4) { padding-left: 50px; }
+
+    .total-row td {
+      font-weight: 600;
+    }
+
+    .form-group {
+      margin-bottom: 15px;
+    }
+
+    .form-group label {
+      display: block;
+      margin-bottom: 5px;
+      font-weight: 500;
+    }
+
+    .form-group input, .form-group select {
+      width: 100%;
+      padding: 10px;
+      border: 1px solid #ccc;
+      border-radius: 8px;
+    }
+
+    .hidden { display: none; }
+
+    button.place-order {
+      width: 100%;
+      background-color: #28a745;
+      color: white;
+      padding: 12px;
+      border: none;
+      border-radius: 8px;
+      font-size: 1rem;
+      font-weight: bold;
+      cursor: pointer;
+    }
+
+    button.place-order:hover {
+      background-color: #218838;
+    }
+
+    .toast {
+      position: fixed;
+      bottom: 30px;
+      right: 30px;
+      background-color: #28a745;
+      color: white;
+      padding: 12px 20px;
+      border-radius: 6px;
+      font-weight: 500;
+      box-shadow: 0 6px 18px rgba(0, 0, 0, 0.2);
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.4s ease-in-out;
+      z-index: 9999;
+    }
+    .toast.show {
+      opacity: 1;
+      pointer-events: auto;
+    }
+
+    @media (max-width: 768px) {
+    .checkout-container {
+      grid-template-columns: 1fr;
+      width: 100%;
+      max-width: 600px;
+      
+    }
+  }
+
+  @media (max-width: 430px) {
+    .checkout-container {
+      grid-template-columns: 1fr;
+      width: 100%;
+      max-width: 355px;
+      margin-left: 35px;
+    }
+  }
+
+  @media (max-width: 391px) {
+    .checkout-container {
+      grid-template-columns: 1fr;
+      width: 100%;
+      max-width: 330px;
+      margin-left: 23px;
+    }
+
+    table{
+      font-size: 13px;
+    }
+  }
+
+    @media (max-width: 1025px) {
+    .checkout-container {
+      width: 900px;
+    }
+
+    td{
+      font-size: 12px;
+    }
+
+    th:nth-child(3){padding-left: 40px;}
+    td:nth-child(3){padding-left: 40px;}
+
+    th:nth-child(2){padding-left: 30px;}
+    td:nth-child(2){padding-left: 40px;}
+
+    th:nth-child(4){padding-left: 40px;}
+
+
+  }
+  </style>
+</head>
+<body class="auth-loading">
+  <!-- Header -->
+  <div id="header-container"></div>
+
+  <main>
+    <div class="checkout-container">
+      <div class="card" id="order-summary">
+        <h2>Order Summary</h2>
+        <table id="summary-table">
+          <thead>
+            <tr><th>Product</th><th>Price</th><th>Qty</th><th>Subtotal</th></tr>
+          </thead>
+          <tbody></tbody>
+          <tfoot>
+            <tr class="total-row">
+              <td>Total</td><td></td><td></td><td id="grand-total"></td>
+            </tr>
+            <tr class="total-row" id="delivery-row" style="display:none">
+              <td>Delivery Fee</td><td></td><td></td><td id="delivery-fee"></td>
+            </tr>
+            <tr class="total-row">
+              <td>Final Total</td><td></td><td></td><td id="final-total"></td>
+            </tr>
+          </tfoot>
+        </table>
+      </div>
+      <div class="card">
+        <h2>Delivery & Payment</h2>
+        <div class="form-group">
+          <label for="orderType">Order Type</label>
+          <select id="orderType">
+            <option value="pickup">Pickup</option>
+            <option value="delivery">Delivery</option>
+          </select>
+        </div>
+        <div class="form-group hidden" id="pickupTime">
+          <label for="pickupDate">Pickup Date</label>
+          <input type="date" id="pickupDate">
+          <label for="pickupTimeInput">Pickup Time</label>
+          <input type="time" id="pickupTimeInput">
+        </div>
+        <div class="form-group hidden" id="deliveryAddress">
+          <label for="address">Select Address</label>
+          <select id="address"></select>
+        </div>
+        <div class="form-group">
+          <label for="paymentMethod">Payment Method</label>
+          <select id="paymentMethod">
+            <option value="ecocash">EcoCash</option>
+            <option value="innbucks">Innbucks</option>
+            <option value="visa">Visa</option>
+            <option value="mastercard">Mastercard</option>
+            <option value="pickup">Pay on Pickup</option>
+          </select>
+        </div>
+        <button class="place-order">Place Order</button>
+      </div>
+    </div>
+  </main>
+
+  <!-- Footer -->
+  <div id="footer-container"></div>
+
+  <div id="toast" class="toast"></div>
+
+  <script type="module">
+    import { db, auth, updateCartCount } from './shared.js';
+    import { getDoc, getDocs, doc, collection } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+    import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+
+    const cart = JSON.parse(localStorage.getItem('cart')) || [];
+    const summaryBody = document.querySelector('#summary-table tbody');
+    const grandTotal = document.getElementById('grand-total');
+    const finalTotalCell = document.getElementById('final-total');
+    const deliveryFeeCell = document.getElementById('delivery-fee');
+    const deliveryRow = document.getElementById('delivery-row');
+    const addressSelect = document.getElementById('address');
+
+    const orderType = document.getElementById('orderType');
+    const deliveryAddress = document.getElementById('deliveryAddress');
+    const pickupTime = document.getElementById('pickupTime');
+    const paymentMethod = document.getElementById('paymentMethod');
+
+    const DELIVERY_THRESHOLD = 10;
+    const DELIVERY_FEE = 2.5;
+    let total = 0;
+
+    function showToast(message) {
+      const toast = document.getElementById("toast");
+      toast.textContent = message;
+      toast.classList.add("show");
+      setTimeout(() => toast.classList.remove("show"), 3000);
+    }
+
+    async function fetchProductDetails() {
+      const snapshot = await getDocs(collection(db, 'products'));
+      const allProducts = {};
+      snapshot.forEach(doc => allProducts[doc.id] = doc.data());
+
+      summaryBody.innerHTML = '';
+      cart.forEach(item => {
+        const data = allProducts[item.id];
+        const name = data?.name || 'Unnamed';
+        const price = parseFloat(data?.price) || 0;
+        const image = data?.image || '';
+        const quantity = item.quantity || 1;
+        const subtotal = (price * quantity).toFixed(2);
+        total += price * quantity;
+
+        const row = document.createElement('tr');
+        row.innerHTML = `
+          <td><img src="${image}" alt="${name}"> ${name}</td>
+          <td>$${price.toFixed(2)}</td>
+          <td>${quantity}</td>
+          <td>$${subtotal}</td>
+        `;
+        summaryBody.appendChild(row);
+      });
+
+      grandTotal.textContent = `$${total.toFixed(2)}`;
+      updateTotals();
+    }
+
+    function updateTotals() {
+      const isDelivery = orderType.value === 'delivery';
+      let finalTotal = total;
+
+      if (isDelivery && total >= DELIVERY_THRESHOLD) {
+        deliveryRow.style.display = '';
+        deliveryFeeCell.textContent = `$${DELIVERY_FEE.toFixed(2)}`;
+        finalTotal += DELIVERY_FEE;
+      } else {
+        deliveryRow.style.display = 'none';
+      }
+
+      finalTotalCell.textContent = `$${finalTotal.toFixed(2)}`;
+    }
+
+    function toggleOptions() {
+      const isDelivery = orderType.value === 'delivery';
+      deliveryAddress.classList.toggle('hidden', !isDelivery);
+      pickupTime.classList.toggle('hidden', isDelivery);
+
+      Array.from(paymentMethod.options).forEach(opt => {
+        opt.disabled = isDelivery ? opt.value === 'pickup' : false;
+      });
+
+      if (isDelivery && total < DELIVERY_THRESHOLD) {
+        showToast('Delivery not available for orders below $10.');
+        orderType.value = 'pickup';
+        toggleOptions();
+      }
+
+      updateTotals();
+    }
+
+    async function loadAddresses(userId) {
+      const snapshot = await getDocs(collection(db, `users/${userId}/addresses`));
+      addressSelect.innerHTML = '';
+
+      if (snapshot.empty) {
+        const option = document.createElement('option');
+        option.disabled = true;
+        option.textContent = "No saved addresses found";
+        addressSelect.appendChild(option);
+        return;
+      }
+
+      snapshot.forEach(doc => {
+        const data = doc.data();
+        const option = document.createElement('option');
+        option.value = doc.id;
+        option.textContent = `${data.fullName} - ${data.phone} - ${data.addressLine}`;
+        if (data.isDefault) option.selected = true;
+        addressSelect.appendChild(option);
+      });
+    }
+
+    document.querySelector('.place-order').addEventListener('click', async () => {
+      const isDelivery = orderType.value === 'delivery';
+      const addressId = addressSelect.value;
+      const date = document.getElementById('pickupDate').value;
+      const time = document.getElementById('pickupTimeInput').value;
+
+      if (isDelivery && !addressId) return showToast('Please select a delivery address.');
+      if (!isDelivery && (!date || !time)) return showToast('Please provide pickup date and time.');
+
+      let fullAddress = '';
+      if (isDelivery) {
+        const user = auth.currentUser;
+        if (user) {
+          const addressRef = doc(db, `users/${user.uid}/addresses/${addressId}`);
+          const addressSnap = await getDoc(addressRef);
+          if (addressSnap.exists()) {
+            const data = addressSnap.data();
+            fullAddress = `${data.fullName} - ${data.phone} - ${data.addressLine}`;
+          } else {
+            return showToast('Failed to fetch address.');
+          }
+        } else {
+          return showToast('You must be logged in.');
+        }
+      }
+
+      const finalTotal = (isDelivery && total >= DELIVERY_THRESHOLD)
+        ? (total + DELIVERY_FEE).toFixed(2)
+        : total.toFixed(2);
+
+      const order = {
+        id: 'ORD' + Math.floor(Math.random() * 1000000),
+        cart,
+        total: `$${finalTotal}`,
+        orderType: orderType.value,
+        paymentMethod: paymentMethod.value,
+        deliveryAddress: isDelivery ? fullAddress : '',
+        pickupDate: isDelivery ? '' : date,
+        pickupTime: isDelivery ? '' : time,
+        timestamp: new Date().toISOString()
+      };
+
+      localStorage.setItem('latestOrder', JSON.stringify(order));
+      localStorage.removeItem('cart');
+      window.location.href = 'confirmation.html';
+    });
+
+    orderType.addEventListener('change', toggleOptions);
+
+    onAuthStateChanged(auth, user => {
+      document.body.classList.remove('auth-loading');
+      updateCartCount();
+      if (user) loadAddresses(user.uid);
+    });
+
+    fetchProductDetails();
+    toggleOptions();
+  </script>
+</body>
+</html>

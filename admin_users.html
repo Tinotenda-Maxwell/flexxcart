@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Flexxcart Admin | Users</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+    import { getFirestore, collection, getDocs } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyAZzKHkXOeiAZGcziTLUO4nnPjCaVPDoqE",
+      authDomain: "flexxcart-4eec7.firebaseapp.com",
+      projectId: "flexxcart-4eec7",
+      storageBucket: "flexxcart-4eec7.appspot.com",
+      messagingSenderId: "214282586265",
+      appId: "1:214282586265:web:b750a44367aa26d0e45008",
+      measurementId: "G-QPEWW4K5QF"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+
+    const userTable = document.getElementById("userTableBody");
+
+    async function loadUsers() {
+      const querySnapshot = await getDocs(collection(db, "users"));
+      for (const docSnap of querySnapshot.docs) {
+        const userData = docSnap.data();
+        const ordersSnapshot = await getDocs(collection(db, `users/${docSnap.id}/orders`));
+        const numOrders = ordersSnapshot.size;
+
+        const row = document.createElement("tr");
+        row.className = "hover:bg-blue-50 transition-colors duration-200";
+
+        row.innerHTML = `
+          <td class="py-3 px-4 border-b border-gray-200">${userData.fullName || "N/A"}</td>
+          <td class="py-3 px-4 border-b border-gray-200">${userData.email || "N/A"}</td>
+          <td class="py-3 px-4 border-b border-gray-200">${userData.address || "N/A"}</td>
+          <td class="py-3 px-4 border-b border-gray-200 text-center font-semibold text-blue-700">${numOrders}</td>
+        `;
+
+        userTable.appendChild(row);
+      }
+    }
+
+    loadUsers();
+  </script>
+</head>
+
+<body class="flex min-h-screen bg-gradient-to-br from-blue-50 to-blue-100">
+  <!-- Sidebar -->
+  <aside class="w-64 bg-[#1C1C1C] text-white shadow-xl min-h-screen">
+    <div class="p-6 font-bold text-2xl text-white tracking-wide">Flexxcart Admin</div>
+    <nav class="mt-8 space-y-1">
+      <a href="admin_dashboard.html" class="block px-6 py-3 rounded-l-full text-white hover:bg-blue-700 hover:font-semibold hover:rounded-l-full">Dashboard</a>
+      <a href="admin_users.html" class="block px-6 py-3 bg-blue-700 font-semibold text-white rounded-l-full">Users</a>
+      <a href="admin_products.html" class="block px-6 py-3 rounded-l-full text-white hover:bg-blue-700 hover:font-semibold hover:rounded-l-full">Products</a>
+      <a href="admin_categories.html" class="block px-6 py-3 rounded-l-full text-white hover:bg-blue-700 hover:font-semibold hover:rounded-l-full">Categories</a>
+      <a href="admin_stock.html" class="block px-6 py-3 rounded-l-full text-white hover:bg-blue-700 hover:font-semibold hover:rounded-l-full">Stock</a>
+    </nav>
+    <div class="px-6 py-4 mt-8">
+      <button onclick="window.location.href='login.html'" class="w-full bg-blue-600 text-white py-2 px-4 rounded-lg hover:bg-blue-700 font-semibold">
+        Logout
+      </button>
+    </div>
+  </aside>
+
+  <!-- Main Content -->
+  <div class="flex-1 flex flex-col">
+    <!-- Header -->
+    <header class="bg-blue-700 shadow px-8 py-4 flex justify-between items-center text-white">
+      <h1 class="text-2xl font-bold">User Management</h1>
+      <div class="flex items-center gap-4">
+        <span class="text-blue-100">Welcome, Admin</span>
+        <img src="images/user_icon.png" alt="User Icon" class="w-10 h-10 rounded-full border border-white">
+      </div>
+    </header>
+
+    <!-- Page Content -->
+    <main class="flex-1 p-8">
+      <div class="mb-6">
+        <h2 class="text-3xl font-bold text-blue-800">All Users</h2>
+        <p class="text-gray-600">Overview of all registered Flexxcart users</p>
+      </div>
+
+      <section class="bg-white rounded-xl shadow-lg p-6">
+        <div class="overflow-x-auto">
+          <table class="min-w-full table-auto border-collapse">
+            <thead>
+              <tr class="bg-blue-100 text-blue-900">
+                <th class="py-3 px-4 text-left">Full Name</th>
+                <th class="py-3 px-4 text-left">Email</th>
+                <th class="py-3 px-4 text-left">Address</th>
+                <th class="py-3 px-4 text-center"># of Orders</th>
+              </tr>
+            </thead>
+            <tbody id="userTableBody" class="bg-white text-gray-700">
+              <!-- Rows will be inserted here -->
+            </tbody>
+          </table>
+        </div>
+      </section>
+    </main>
+  </div>
+</body>
+
+</html>

@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Flexxcart | Login</title>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet" />
+  <style>
+    * { box-sizing: border-box; }
+    body, html {
+      margin: 0;
+      padding: 0;
+      height: 100%;
+      font-family: 'Poppins', sans-serif;
+      background: url('login.jpeg') no-repeat center center fixed;
+      background-size: cover;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+
+    }
+    
+    .login-container {
+      background-color: rgba(255, 255, 255, 0.95);
+      padding: 40px;
+      border-radius: 10px;
+      box-shadow: 0 6px 20px rgba(0, 0, 0, 0.2);
+      max-width: 420px;
+      margin: 10% auto;
+    }
+    h2 {
+      text-align: center;
+      color: #28a745;
+      margin-bottom: 20px;
+    }
+    input {
+      width: 100%;
+      padding: 12px;
+      margin: 10px 0;
+      border-radius: 6px;
+      border: 1px solid #ccc;
+      font-size: 1rem;
+    }
+    .password-wrapper {
+      position: relative;
+    }
+    .password-wrapper input {
+      padding-right: 40px;
+    }
+    .toggle-eye {
+      position: absolute;
+      right: 12px;
+      top: 50%;
+      transform: translateY(-50%);
+      cursor: pointer;
+      font-size: 16px;
+      user-select: none;
+    }
+    button {
+      width: 100%;
+      padding: 12px;
+      background-color: #28a745;
+      color: white;
+      font-size: 1rem;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      margin-top: 10px;
+    }
+    button:hover {
+      background-color: #218838;
+    }
+    .message {
+      text-align: center;
+      font-size: 0.9rem;
+      margin-top: 10px;
+    }
+    .error-msg { color: red; }
+    .success-msg { color: green; }
+
+    @media (max-width: 768px){
+      .login-container{
+        width: 300px;
+        height: 400px;
+      }
+
+    @media (max-width: 430px){
+      .login-container{
+        width: 300px;
+        height: 350px;
+      }
+
+      h2{
+        font-size: 20px;
+        margin-top: -10px;
+      }
+
+      input{
+        margin-top: 10px;
+      }
+
+
+    }
+  </style>
+</head>
+<body>
+  <div class="login-container">
+    <h2>Welcome Back</h2>
+    <form id="loginForm">
+      <input type="text" id="emailOrUsername" placeholder="Email or Username" required />
+      
+      <div class="password-wrapper">
+        <input type="password" id="password" placeholder="Password" required />
+        <span class="toggle-eye" onclick="togglePassword('password', this)">👁️</span>
+      </div>
+      
+      <button type="submit">Login</button>
+      <div class="message error-msg" id="errorMsg"></div>
+    </form>
+    <p style="text-align:center">Don't have an account? <a href="signup.html">Sign up here</a></p>
+  </div>
+  <script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+  import { getAuth, signInWithEmailAndPassword, fetchSignInMethodsForEmail } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+  import { getFirestore, doc, getDoc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+
+  const firebaseConfig = {
+    apiKey: "AIzaSyAZzKHkXOeiAZGcziTLUO4nnPjCaVPDoqE",
+    authDomain: "flexxcart-4eec7.firebaseapp.com",
+    projectId: "flexxcart-4eec7",
+    storageBucket: "flexxcart-4eec7.firebasestorage.app",
+    messagingSenderId: "214282586265",
+    appId: "1:214282586265:web:b750a44367aa26d0e45008",
+    measurementId: "G-QPEWW4K5QF"
+  };
+
+  const app = initializeApp(firebaseConfig);
+  const auth = getAuth(app);
+  const db = getFirestore(app);
+
+  const loginForm = document.getElementById("loginForm");
+  const errorMsg = document.getElementById("errorMsg");
+
+  window.togglePassword = function(fieldId, icon) {
+    const field = document.getElementById(fieldId);
+    if (field.type === "password") {
+      field.type = "text";
+      icon.textContent = "🙈";
+    } else {
+      field.type = "password";
+      icon.textContent = "👁️";
+    }
+  };
+
+  loginForm.addEventListener("submit", async (e) => {
+    e.preventDefault();
+
+    const input = document.getElementById("emailOrUsername").value.trim();
+    const password = document.getElementById("password").value;
+    errorMsg.textContent = "";
+
+    let emailToUse = input;
+    const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+    try {
+      if (!emailPattern.test(input)) {
+        // Input is a username
+        const usernameDoc = await getDoc(doc(db, "usernames", input));
+        if (!usernameDoc.exists()) {
+          errorMsg.textContent = "Username not found.";
+          return;
+        }
+
+        const uid = usernameDoc.data().uid;
+        const userDoc = await getDoc(doc(db, "users", uid));
+        if (!userDoc.exists()) {
+          errorMsg.textContent = "Account associated with username not found.";
+          return;
+        }
+
+        emailToUse = userDoc.data().email;
+      } else {
+        // Input is an email
+        const methods = await fetchSignInMethodsForEmail(auth, input);
+        if (methods.length === 0) {
+          errorMsg.textContent = "Email not found.";
+          return;
+        }
+      }
+
+      await signInWithEmailAndPassword(auth, emailToUse, password);
+      window.location.href = "index.html";
+
+    } catch (error) {
+      if (error.code === "auth/invalid-credential") {
+        errorMsg.textContent = "Incorrect password. Please try again.";
+      } else {
+        errorMsg.textContent = "Login failed: " + error.message;
+      }
+    }
+  });
+</script>
+</body>
+</html>

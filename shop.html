@@ -1,0 +1,265 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Flexxcart | Shop</title>
+  <link rel="stylesheet" href="style.css" />
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet"/>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+  <script src="inject.js" defer></script>
+  <style>
+    /* --- Add your internal page styles here or link to another CSS file --- */
+    main {
+      flex: 1;
+      padding: 20px 5%;
+    }
+    h2 {
+      color: #28a745;
+      margin-bottom: 5px;
+    }
+    .category-section {
+      margin-bottom: 40px;
+    }
+    .category-section h3 {
+      margin-bottom: 10px;
+    }
+    .product-list {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+      gap: 20px;
+    }
+    .product-card {
+      background-color: #fff;
+      padding: 12px;
+      border-radius: 10px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+      text-align: center;
+      height: 200px;
+    }
+    .product-card img {
+      max-width: 100%;
+      height: 80px;
+      object-fit: contain;
+    }
+    .product-card h4 {
+      margin: 1px 0 2px;
+    }
+    .product-card p {
+      color: #555;
+      font-size: 0.9rem;
+      margin-top: -1px;
+    }
+    .button-group {
+      margin-top: 10px;
+      display: flex;
+      justify-content: center;
+      gap: 8px;
+    }
+    .button-group button {
+      padding: 6px 12px;
+      font-size: 0.85rem;
+      background-color: #f5b041;
+      color: white;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+    .button-group button:hover {
+      background-color: #f5b041;
+    }
+    .toast {
+      position: fixed;
+      bottom: 30px;
+      right: 30px;
+      background-color: #28a745;
+      color: white;
+      padding: 12px 20px;
+      border-radius: 6px;
+      font-weight: 500;
+      box-shadow: 0 6px 18px rgba(0, 0, 0, 0.2);
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.4s ease-in-out;
+      z-index: 9999;
+    }
+    .toast.show {
+      opacity: 1;
+      pointer-events: auto;
+    }
+
+    @media screen and (max-width: 1024px) {
+      .product-list {
+        grid-template-columns: repeat(4, 1fr);
+      }
+
+      .product-card img{
+        max-width: 80px;
+      }
+
+    @media screen and (max-width: 768px) {
+      .product-list {
+        grid-template-columns: repeat(3, 1fr);
+      }
+
+      .product-card img{
+        max-width: 100px;
+      }
+
+    @media screen and (max-width: 430px) {
+      .product-list {
+        grid-template-columns: repeat(2, 1fr);
+      }
+
+      .product-card{
+        height: 185px;
+      }
+
+      .product-card img{
+        height: 70px;
+        max-width: 70px;
+      }
+
+      .product-card p {
+        margin-top: -5px;
+      }
+
+      .button-group button{
+        height: 30px;
+        font-size: 10px;
+        margin-top: -8px;
+      }
+
+
+    }
+  </style>
+</head>
+<body class="auth-loading">
+  <!-- Injected Header -->
+  <div id="header-container"></div>
+
+  <main>
+    <h2>Shop</h2>
+    <div id="productList">Loading products...</div>
+  </main>
+
+  <!-- Injected Footer -->
+  <div id="footer-container"></div>
+
+  <!-- Toast -->
+  <div id="toast" class="toast"></div>
+
+  <script type="module">
+    import { db, auth, updateCartCount } from './shared.js';
+    import {
+      collection,
+      getDocs
+    } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+    import {
+      onAuthStateChanged
+    } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+
+    const productList = document.getElementById("productList");
+    const toast = document.getElementById("toast");
+
+    function showToast(message) {
+      toast.textContent = message;
+      toast.classList.add("show");
+      setTimeout(() => toast.classList.remove("show"), 2500);
+    }
+
+    function renderProductsByCategory(productsByCategory) {
+      productList.innerHTML = "";
+      for (const category in productsByCategory) {
+        const section = document.createElement("div");
+        section.className = "category-section";
+
+        const title = document.createElement("h3");
+        title.textContent = category.charAt(0).toUpperCase() + category.slice(1);
+        section.appendChild(title);
+
+        const grid = document.createElement("div");
+        grid.className = "product-list";
+
+        productsByCategory[category].forEach(({ id, name, price, image }) => {
+          const div = document.createElement("div");
+          div.className = "product-card";
+          div.innerHTML = `
+            <img src="${image}" alt="${name}" />
+            <h4>${name}</h4>
+            <p>Price: $${price?.toFixed(2) || "0.00"}</p>
+            <div class="button-group">
+              <button class="add" data-id="${id}" data-name="${name}">Add to Cart</button>
+              <button class="buy" data-id="${id}">Buy Now</button>
+            </div>
+          `;
+          grid.appendChild(div);
+        });
+
+        section.appendChild(grid);
+        productList.appendChild(section);
+      }
+
+      // Bind cart buttons
+      document.querySelectorAll(".add").forEach(btn => {
+        btn.onclick = () => {
+          const id = btn.dataset.id;
+          const name = btn.dataset.name;
+          const cart = JSON.parse(localStorage.getItem("cart")) || [];
+          const index = cart.findIndex(item => item.id === id);
+          if (index !== -1) {
+            cart[index].quantity += 1;
+          } else {
+            cart.push({ id, quantity: 1 });
+          }
+          localStorage.setItem("cart", JSON.stringify(cart));
+          updateCartCount();
+          showToast(`${name} added to cart!`);
+        };
+      });
+
+      document.querySelectorAll(".buy").forEach(btn => {
+        btn.onclick = () => {
+          const id = btn.dataset.id;
+          localStorage.setItem("cart", JSON.stringify([{ id, quantity: 1 }]));
+          updateCartCount();
+          location.href = "cart.html";
+        };
+      });
+    }
+
+    async function loadProducts() {
+      try {
+        const snapshot = await getDocs(collection(db, "products"));
+        const productsByCategory = {};
+
+        if (snapshot.empty) {
+          productList.innerHTML = "<p>No products found.</p>";
+          return;
+        }
+
+        snapshot.forEach(doc => {
+          const data = doc.data();
+          const category = data.category || data.categoryName || "Uncategorized";
+          if (!productsByCategory[category]) {
+            productsByCategory[category] = [];
+          }
+          productsByCategory[category].push({ id: doc.id, ...data });
+        });
+
+        renderProductsByCategory(productsByCategory);
+      } catch (error) {
+        console.error("Error loading products:", error);
+        productList.innerHTML = `<p style="color:red;">Failed to load products.</p>`;
+      }
+    }
+
+    // Wait for auth, then load products
+    onAuthStateChanged(auth, user => {
+      document.body.classList.remove("auth-loading");
+      updateCartCount();
+      loadProducts();
+    });
+  </script>
+</body>
+</html>

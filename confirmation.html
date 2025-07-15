@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Flexxcart | Order Confirmation</title>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+  <script type="module" src="shared.js"></script>
+  <script src="inject.js" defer></script>
+  <style>
+    main { flex: 1; }
+    .confirmation-container {
+      max-width: 1000px;
+      margin: 40px auto;
+      background: white;
+      padding: 30px;
+      border-radius: 16px;
+      box-shadow: 0 8px 20px rgba(0,0,0,0.08);
+    }
+    h2 { 
+      color: #28a745; 
+      font-size: 1.6rem;
+      margin-top: -10px;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 20px;
+    }
+    th, td {
+      padding: 10px 0;
+      vertical-align: top;
+    }
+    th {
+      font-weight: 600;
+      color: #333;
+      text-align: left;
+    }
+    td img {
+      width: 40px; height: 40px;
+      object-fit: cover; margin-right: 10px;
+      vertical-align: middle; border-radius: 6px;
+    }
+    td:nth-child(2), td:nth-child(3), td:nth-child(4),
+    th:nth-child(2), th:nth-child(3), th:nth-child(4) {
+      text-align: right;
+    }
+
+    td:nth-child(2), th:nth-child(2){
+      padding-left: -40px;
+    }
+
+    td:nth-child(3), th:nth-child(3){
+      padding-left: 2px;
+    }
+    .total-row td { font-weight: 600; }
+
+     @media (max-width: 1024px) {
+      .confirmation-container{
+        width: 700px;
+      }
+
+    @media (max-width: 769px) {
+      .confirmation-container{
+        width: 600px;
+      }
+
+    @media (max-width: 430px) {
+      .confirmation-container{
+        width: 350px;
+      }
+
+      table{
+        font-size: 13px;
+      }
+
+      p {
+        font-size: 13px;
+      }
+
+    @media (max-width: 391px) {
+      .confirmation-container{
+        width: 300px;
+      }
+
+      p{
+        font-size: 10px;
+      }
+
+      table{
+        font-size: 10px;
+      }
+
+    
+      td img{
+        margin-top: -13px;
+      }
+
+     }
+  </style>
+</head>
+<body class="auth-loading">
+  <div id="header-container"></div>
+
+  <main>
+    <div class="confirmation-container">
+      <h2>Order Confirmed!</h2>
+      <p>Thank you for your order. Here are your order details:</p>
+
+      <table id="order-details">
+        <thead>
+          <tr>
+            <th>Product</th><th>Price</th><th>Qty</th><th>Subtotal</th>
+          </tr>
+        </thead>
+        <tbody></tbody>
+        <tfoot>
+          <!-- Delivery fee row will be injected here dynamically -->
+          <tr class="total-row">
+            <td>Total</td><td></td><td></td><td id="grand-total"></td>
+          </tr>
+        </tfoot>
+      </table>
+
+      <div id="extra-details"></div>
+    </div>
+  </main>
+
+  <div id="footer-container"></div>
+
+  <script type="module">
+    import { db, auth, updateCartCount } from './shared.js';
+    import { doc, getDoc }   from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js';
+    import { onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js';
+
+    const DELIVERY_FEE = 2.5;
+    const DELIVERY_THRESHOLD = 10;
+
+    document.addEventListener('DOMContentLoaded', () => {
+      onAuthStateChanged(auth, () => {
+        document.body.classList.remove('auth-loading');
+        updateCartCount();
+        renderOrder();
+      });
+    });
+
+    async function renderOrder() {
+      const order = JSON.parse(localStorage.getItem('latestOrder'));
+      const tbody = document.querySelector('#order-details tbody');
+      const tfoot = document.querySelector('#order-details tfoot');
+      const totalEl = document.getElementById('grand-total');
+      const extra = document.getElementById('extra-details');
+
+      if (!order?.cart?.length) {
+        document.querySelector('.confirmation-container')
+                .innerHTML = '<p>No order found.</p>';
+        return;
+      }
+
+      let subtotal = 0;
+      for (const item of order.cart) {
+        const snap = await getDoc(doc(db, 'products', item.id));
+        if (!snap.exists()) continue;
+        const p = snap.data();
+        const line = p.price * item.quantity;
+        subtotal += line;
+
+        const row = document.createElement('tr');
+        row.innerHTML = `
+          <td><img src="${p.image}" alt="${p.name}"> ${p.name}</td>
+          <td>$${p.price.toFixed(2)}</td>
+          <td>${item.quantity}</td>
+          <td>$${line.toFixed(2)}</td>
+        `;
+        tbody.appendChild(row);
+      }
+
+      // If delivery applies, insert a fee row before the Totals
+      let total = subtotal;
+      if (order.orderType === 'delivery' && subtotal >= DELIVERY_THRESHOLD) {
+        total += DELIVERY_FEE;
+        const feeRow = document.createElement('tr');
+        feeRow.innerHTML = `
+          <td><strong>Delivery Fee<strong></td>
+          <td></td><td></td>
+          <td>$${DELIVERY_FEE.toFixed(2)}</td>
+        `;
+        // insert feeRow just before the last .total-row
+        const totalRow = tfoot.querySelector('.total-row');
+        tfoot.insertBefore(feeRow, totalRow);
+      }
+
+      totalEl.textContent = `$${total.toFixed(2)}`;
+
+      extra.innerHTML = `
+        <p><strong>Order ID:</strong> ${order.id}</p>
+        <p><strong>Order Type:</strong> ${order.orderType}</p>
+        <p><strong>Payment Method:</strong> ${order.paymentMethod}</p>
+        ${order.deliveryAddress ? `<p><strong>Delivery Address:</strong> ${order.deliveryAddress}</p>` : ''}
+        ${order.pickupDate ? `<p><strong>Pickup Date & Time:</strong> ${order.pickupDate} at ${order.pickupTime}</p>` : ''}
+      `;
+    }
+  </script>
+</body>
+</html>

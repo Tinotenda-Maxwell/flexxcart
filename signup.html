@@ -1,0 +1,309 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Flexxcart | Sign Up</title>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet" />
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+
+    body, html {
+      margin: 0;
+      padding: 0;
+      height: 100%;
+      font-family: 'Poppins', sans-serif;
+      background: url('login.jpeg') no-repeat center center fixed;
+      background-size: cover;
+      display: grid;
+      place-items: center;
+    }
+
+    .signup-container {
+      background-color: rgba(255, 255, 255, 0.95);
+      padding: 40px;
+      border-radius: 10px;
+      box-shadow: 0 6px 20px rgba(0, 0, 0, 0.2);
+      max-width: 800px;
+      width: 90%;
+      margin: 0 auto;
+    }
+
+    h2 {
+      text-align: center;
+      color: #28a745;
+      margin-bottom: 20px;
+    }
+
+    input {
+      width: 100%;
+      padding: 12px;
+      margin: 10px 0;
+      border-radius: 6px;
+      border: 1px solid #ccc;
+      font-size: 1rem;
+    }
+
+    .password-wrapper {
+      position: relative;
+    }
+
+    .password-wrapper input {
+      padding-right: 40px;
+    }
+
+    .toggle-eye {
+      position: absolute;
+      right: 12px;
+      top: 50%;
+      transform: translateY(-50%);
+      cursor: pointer;
+      font-size: 16px;
+      user-select: none;
+    }
+
+    button {
+      width: 100%;
+      padding: 12px;
+      background-color: #28a745;
+      color: white;
+      font-size: 1rem;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      margin-top: 10px;
+    }
+
+    button:hover {
+      background-color: #218838;
+    }
+
+    .message {
+      text-align: center;
+      font-size: 0.9rem;
+      margin-top: 10px;
+    }
+
+    .error-msg { color: red; }
+    .success-msg { color: green; }
+
+    .strength-check {
+      font-size: 0.85rem;
+      margin-top: -5px;
+    }
+
+    .strength-check span {
+      display: block;
+      color: gray;
+    }
+
+    .valid { color: green; }
+    .invalid { color: red; }
+
+     @media (max-width: 1024px){
+      .signup-container{
+        width: 620px;
+      }
+    }
+
+    /* Responsive Adjustments */
+    @media (max-width: 769px) {
+      .signup-container {
+        max-width: 300px%;
+      }
+
+      input {
+        font-size: 0.85rem;
+        padding: 10px;
+      }
+
+      button {
+        font-size: 0.9rem;
+        padding: 10px;
+      }
+
+      h2 {
+        font-size: 20px;
+        margin-top: 0;
+      }
+
+      #passwordCheck {
+        font-size: 0.75rem;
+      }
+
+      p {
+        font-size: 14px;
+      }
+    }
+
+    @media (max-width: 430px){
+      .signup-container{
+        width: 320px;
+      }
+    }
+
+   @media (max-width: 391px){
+    .signup-container{
+      width: 280px;
+      height: 590px;
+    }
+  }
+  </style>
+</head>
+<body>
+  <div class="signup-container">
+    <h2>Create Your Account</h2>
+    <form id="signupForm">
+      <input type="text" id="username" placeholder="Username " required />
+      <div id="usernameCheck" class="strength-check"></div>
+
+      <input type="text" id="name" placeholder="Full Name" required />
+      <input type="email" id="email" placeholder="Email Address" required />
+
+      <div class="password-wrapper">
+        <input type="password" id="password" placeholder="Password " required />
+        <span class="toggle-eye" onclick="togglePassword('password', this)">👁️</span>
+      </div>
+
+      <div id="passwordCheck" class="strength-check">
+        <span id="lengthCheck">• At least 8 characters</span>
+        <span id="uppercaseCheck">• One uppercase letter</span>
+        <span id="numberCheck">• One number</span>
+        <span id="specialCheck">• One special character</span>
+      </div>
+
+      <div class="password-wrapper">
+        <input type="password" id="confirmPassword" placeholder="Confirm Password" required />
+        <span class="toggle-eye" onclick="togglePassword('confirmPassword', this)">👁️</span>
+      </div>
+
+      <button type="submit">Sign Up</button>
+
+      <div class="message error-msg" id="errorMsg"></div>
+      <div class="message success-msg" id="successMsg"></div>
+    </form>
+    <p style="text-align:center">Already have an account? <a href="login.html">Login here</a></p>
+  </div>
+
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+    import { getAuth, createUserWithEmailAndPassword, updateProfile } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+    import { getFirestore, doc, setDoc, getDoc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyAZzKHkXOeiAZGcziTLUO4nnPjCaVPDoqE",
+      authDomain: "flexxcart-4eec7.firebaseapp.com",
+      projectId: "flexxcart-4eec7",
+      storageBucket: "flexxcart-4eec7.firebasestorage.app",
+      messagingSenderId: "214282586265",
+      appId: "1:214282586265:web:b750a44367aa26d0e45008",
+      measurementId: "G-QPEWW4K5QF"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+    const db = getFirestore(app);
+
+    const signupForm = document.getElementById("signupForm");
+    const errorMsg = document.getElementById("errorMsg");
+    const successMsg = document.getElementById("successMsg");
+
+    document.getElementById("password").addEventListener("input", checkPasswordStrength);
+
+    function checkPasswordStrength() {
+      const password = document.getElementById("password").value;
+
+      document.getElementById("lengthCheck").className = password.length >= 8 ? "valid" : "invalid";
+      document.getElementById("uppercaseCheck").className = /[A-Z]/.test(password) ? "valid" : "invalid";
+      document.getElementById("numberCheck").className = /\d/.test(password) ? "valid" : "invalid";
+      document.getElementById("specialCheck").className = /[!@#$%^&*(),.?":{}|<>]/.test(password) ? "valid" : "invalid";
+    }
+
+    window.togglePassword = function(fieldId, icon) {
+      const field = document.getElementById(fieldId);
+      if (field.type === "password") {
+        field.type = "text";
+        icon.textContent = "🙈";
+      } else {
+        field.type = "password";
+        icon.textContent = "👁️";
+      }
+    };
+
+    document.getElementById("username").addEventListener("blur", async () => {
+      const username = document.getElementById("username").value.trim();
+      const usernameCheck = document.getElementById("usernameCheck");
+
+      if (username.length < 3) {
+        usernameCheck.textContent = "Username too short.";
+        usernameCheck.className = "invalid";
+        return;
+      }
+
+      const usernameRef = doc(db, "usernames", username);
+      const snap = await getDoc(usernameRef);
+
+      if (snap.exists()) {
+        usernameCheck.textContent = "Username already taken.";
+        usernameCheck.className = "invalid";
+      } else {
+        usernameCheck.textContent = "Username available.";
+        usernameCheck.className = "valid";
+      }
+    });
+
+    signupForm.addEventListener("submit", async (e) => {
+      e.preventDefault();
+
+      const username = document.getElementById("username").value.trim();
+      const name = document.getElementById("name").value.trim();
+      const email = document.getElementById("email").value.trim();
+      const password = document.getElementById("password").value;
+      const confirmPassword = document.getElementById("confirmPassword").value;
+
+      errorMsg.textContent = "";
+      successMsg.textContent = "";
+
+      if (password !== confirmPassword) {
+        errorMsg.textContent = "Passwords do not match.";
+        return;
+      }
+
+      try {
+        const usernameRef = doc(db, "usernames", username);
+        const usernameSnap = await getDoc(usernameRef);
+
+        if (usernameSnap.exists()) {
+          errorMsg.textContent = "Username already taken. Choose another.";
+          return;
+        }
+
+        const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+        const user = userCredential.user;
+
+        await updateProfile(user, { displayName: username });
+
+        await setDoc(doc(db, "users", user.uid), {
+          uid: user.uid,
+          name: name,
+          email: email,
+          username: username
+        });
+
+        await setDoc(doc(db, "usernames", username), { uid: user.uid });
+
+        successMsg.textContent = "Signup successful! Redirecting...";
+        signupForm.reset();
+
+        setTimeout(() => {
+          window.location.href = "login.html";
+        }, 2000);
+      } catch (error) {
+        errorMsg.textContent = error.message;
+      }
+    });
+  </script>
+</body>
+</html>

@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Flexxcart Admin | Dashboard</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+
+<body class="flex min-h-screen bg-gradient-to-br from-blue-50 to-blue-100">
+  <!-- Sidebar -->
+  <aside class="w-64 bg-[#1C1C1C] text-white shadow-xl min-h-screen">
+    <div class="p-6 font-bold text-2xl tracking-wide">Flexxcart Admin</div>
+    <nav class="mt-8 space-y-1">
+      <a href="admin_dashboard.html" class="block px-6 py-3 bg-blue-700 font-semibold rounded-l-full">Dashboard</a>
+      <a href="admin_users.html" class="block px-6 py-3 rounded-l-full hover:bg-blue-700 hover:font-semibold">Users</a>
+      <a href="admin_products.html" class="block px-6 py-3 rounded-l-full hover:bg-blue-700 hover:font-semibold">Products</a>
+      <a href="admin_categories.html" class="block px-6 py-3 rounded-l-full hover:bg-blue-700 hover:font-semibold">Categories</a>
+      <a href="admin_stock.html" class="block px-6 py-3 rounded-l-full hover:bg-blue-700 hover:font-semibold">Stock</a>
+    </nav>
+    <div class="px-6 py-4 mt-8">
+      <button onclick="window.location.href='login.html'" class="w-full bg-blue-600 py-2 px-4 rounded-lg hover:bg-blue-700 font-semibold">
+        Logout
+      </button>
+    </div>
+  </aside>
+
+  <!-- Main Content -->
+  <div class="flex-1 flex flex-col">
+    <header class="bg-blue-700 shadow px-8 py-4 flex justify-between items-center text-white">
+      <h1 class="text-2xl font-bold">Dashboard Overview</h1>
+      <div class="flex items-center gap-4">
+        <span class="text-blue-100">Welcome, Admin</span>
+        <img src="images/user_icon.png" alt="User Icon" class="w-10 h-10 rounded-full border border-white">
+      </div>
+    </header>
+
+    <main class="flex-1 p-8">
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+        <div class="bg-white p-6 rounded-xl shadow-md">
+          <h2 class="text-lg font-semibold text-gray-800">Total Users</h2>
+          <p id="totalUsers" class="text-3xl font-bold text-blue-700 mt-2">--</p>
+        </div>
+        <div class="bg-white p-6 rounded-xl shadow-md">
+          <h2 class="text-lg font-semibold text-gray-800">Total Products</h2>
+          <p id="totalProducts" class="text-3xl font-bold text-blue-700 mt-2">--</p>
+        </div>
+        <div class="bg-white p-6 rounded-xl shadow-md">
+          <h2 class="text-lg font-semibold text-gray-800">Total Orders</h2>
+          <p id="totalOrders" class="text-3xl font-bold text-blue-700 mt-2">--</p>
+        </div>
+        <div class="bg-white p-6 rounded-xl shadow-md">
+          <h2 class="text-lg font-semibold text-gray-800">Orders Today</h2>
+          <p id="ordersToday" class="text-3xl font-bold text-green-600 mt-2">--</p>
+        </div>
+      </div>
+
+      <div class="mt-10">
+        <h2 class="text-2xl font-bold text-blue-800 mb-4">Recent Orders</h2>
+        <div class="bg-white rounded-xl shadow-lg p-6 overflow-x-auto">
+          <table class="min-w-full">
+            <thead>
+              <tr class="bg-blue-100 text-left">
+                <th class="px-4 py-2">Order ID</th>
+                <th class="px-4 py-2">User</th>
+                <th class="px-4 py-2">Date</th>
+                <th class="px-4 py-2">Total</th>
+              </tr>
+            </thead>
+            <tbody id="recentOrdersTable"></tbody>
+          </table>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+    import {
+      getFirestore, collection, getDocs, query, where,
+      orderBy, limit
+    } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyAZzKHkXOeiAZGcziTLUO4nnPjCaVPDoqE",
+      authDomain: "flexxcart-4eec7.firebaseapp.com",
+      projectId: "flexxcart-4eec7",
+      storageBucket: "flexxcart-4eec7.appspot.com",
+      messagingSenderId: "214282586265",
+      appId: "1:214282586265:web:b750a44367aa26d0e45008",
+      measurementId: "G-QPEWW4K5QF"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+
+    async function loadDashboardStats() {
+      const usersSnap = await getDocs(collection(db, "users"));
+      const productsSnap = await getDocs(collection(db, "products"));
+      const ordersSnap = await getDocs(collection(db, "orders"));
+
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+
+      const todayOrdersQuery = query(
+        collection(db, "orders"),
+        where("timestamp", ">=", today)
+      );
+      const todayOrdersSnap = await getDocs(todayOrdersQuery);
+
+      document.getElementById("totalUsers").innerText = usersSnap.size;
+      document.getElementById("totalProducts").innerText = productsSnap.size;
+      document.getElementById("totalOrders").innerText = ordersSnap.size;
+      document.getElementById("ordersToday").innerText = todayOrdersSnap.size;
+
+      const recentOrdersQuery = query(
+        collection(db, "orders"),
+        orderBy("timestamp", "desc"),
+        limit(5)
+      );
+      const recentOrdersSnap = await getDocs(recentOrdersQuery);
+      const tableBody = document.getElementById("recentOrdersTable");
+
+      recentOrdersSnap.forEach(doc => {
+        const order = doc.data();
+        const date = new Date(order.timestamp.seconds * 1000).toLocaleDateString();
+        const row = `
+          <tr class="border-t">
+            <td class="px-4 py-2">${doc.id}</td>
+            <td class="px-4 py-2">${order.userEmail || 'Unknown'}</td>
+            <td class="px-4 py-2">${date}</td>
+            <td class="px-4 py-2">$${order.total || '0.00'}</td>
+          </tr>`;
+        tableBody.innerHTML += row;
+      });
+    }
+
+    loadDashboardStats();
+  </script>
+</body>
+
+</html>

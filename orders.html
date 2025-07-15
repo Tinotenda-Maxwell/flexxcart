@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Flexxcart | Your Orders</title>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+  <script type="module" src="shared.js"></script>
+  <script src="inject.js" defer></script>
+  <style>
+    main {
+      max-width: 1200px;
+      margin: 60px auto;
+      padding: 40px;
+      background-color: white;
+      border-radius: 20px;
+      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+    }
+
+    h2 {
+      font-size: 2rem;
+      margin-bottom: 30px;
+      color: #28a745;
+    }
+
+    .order {
+      border: 1px solid #ccc;
+      border-radius: 16px;
+      padding: 30px 40px;
+      margin-bottom: 30px;
+      background-color: #f9f9f9;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+    }
+
+    .order p {
+      margin: 12px 0;
+      font-size: 1.1rem;
+      line-height: 1.6;
+    }
+
+    .no-orders {
+      text-align: center;
+      font-size: 1.2rem;
+      color: #555;
+    }
+  </style>
+</head>
+<body class="auth-loading">
+  <!-- Injected Header -->
+  <div id="header-container"></div>
+
+  <main>
+    <h2>Your Orders</h2>
+    <div id="orders-container">
+      <p class="no-orders">Loading your orders...</p>
+    </div>
+  </main>
+
+  <!-- Injected Footer -->
+  <div id="footer-container"></div>
+
+  <!-- Firebase SDK -->
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+    import { getFirestore, collection, getDocs } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+    import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyAZzKHkXOeiAZGcziTLUO4nnPjCaVPDoqE",
+      authDomain: "flexxcart-4eec7.firebaseapp.com",
+      projectId: "flexxcart-4eec7",
+      storageBucket: "flexxcart-4eec7.appspot.com",
+      messagingSenderId: "214282586265",
+      appId: "1:214282586265:web:b750a44367aa26d0e45008"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+    const auth = getAuth(app);
+    const ordersContainer = document.getElementById('orders-container');
+
+    onAuthStateChanged(auth, async (user) => {
+      document.body.classList.remove("auth-loading");
+
+      if (!user) {
+        ordersContainer.innerHTML = `<p class="no-orders">Please log in to view your orders.</p>`;
+        return;
+      }
+
+      const ordersRef = collection(db, `users/${user.uid}/orders`);
+      const snapshot = await getDocs(ordersRef);
+
+      if (snapshot.empty) {
+        ordersContainer.innerHTML = `<p class="no-orders">You have not placed any orders yet.</p>`;
+        return;
+      }
+
+      ordersContainer.innerHTML = '';
+      snapshot.forEach(doc => {
+        const order = doc.data();
+        const div = document.createElement('div');
+        div.className = 'order';
+        div.innerHTML = `
+          <p><strong>Order ID:</strong> ${order.id}</p>
+          <p><strong>Total:</strong> ${order.total}</p>
+          <p><strong>Type:</strong> ${order.orderType}</p>
+          <p><strong>Payment:</strong> ${order.paymentMethod}</p>
+          ${order.orderType === 'delivery' ? `<p><strong>Address:</strong> ${order.deliveryAddress}</p>` : ''}
+          ${order.orderType === 'pickup' ? `<p><strong>Pickup Time:</strong> ${order.pickupDate} at ${order.pickupTime}</p>` : ''}
+          <p><strong>Date:</strong> ${new Date(order.timestamp).toLocaleString()}</p>
+        `;
+        ordersContainer.appendChild(div);
+      });
+    });
+  </script>
+</body>
+</html>

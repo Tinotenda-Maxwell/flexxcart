@@ -1,0 +1,256 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Flexxcart | Account Details</title>
+  <link rel="stylesheet" href="style.css" />
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+  <script type="module" src="shared.js"></script>
+  <script src="inject.js" defer></script>
+  <style>
+   .content-container {
+    display: flex;
+    justify-content: center;
+    gap: 40px;
+    margin: 40px auto;
+    flex-wrap: wrap;
+    max-width: 100%;
+  }
+
+  .card {
+    background: #fff;
+    padding: 30px;
+    border-radius: 12px;
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.08);
+    width: 100%;
+    max-width: 800px;
+    flex: 1;
+  }
+
+  .card h2 {
+    color: #28a745;
+    margin-bottom: 20px;
+    font-size: 1.5rem;
+  }
+
+  .form-group {
+    margin-bottom: 20px;
+    width: 350px;
+  }
+
+  .form-group label {
+    font-weight: 600;
+    display: block;
+    margin-bottom: 6px;
+  }
+
+  .form-group input {
+    width: 100%;
+    padding: 10px;
+    border-radius: 6px;
+    border: 1px solid #ccc;
+    font-size: 1rem;
+  }
+
+  .form-group input[readonly] {
+    background-color: #f1f1f1;
+  }
+
+  .save-btn {
+    background-color: #28a745;
+    color: white;
+    padding: 12px 20px;
+    border: none;
+    border-radius: 6px;
+    font-weight: 600;
+    cursor: pointer;
+    margin: 30px auto;
+    display: block;
+  }
+
+  .save-btn:hover {
+    background-color: #218838;
+  }
+
+  #toast-container {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    z-index: 9999;
+  }
+
+  .toast {
+    background-color: #28a745;
+    color: white;
+    padding: 10px 18px;
+    margin-top: 10px;
+    border-radius: 8px;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+    animation: slideIn 0.4s ease, fadeOut 0.5s ease 2.5s forwards;
+    font-size: 0.9rem;
+  }
+
+  @media (max-width: 768px) {
+    .content-container {
+      flex-direction: column;
+      align-items: center;
+      max-width: 100%;
+      padding: 0 20px;
+    }
+
+    .card {
+      max-width: 300px;
+      box-sizing: border-box;
+    }
+
+    .form-group {
+      width: 100%;
+    }
+  }
+
+  @keyframes slideIn {
+    from { opacity: 0; transform: translateX(100%); }
+    to { opacity: 1; transform: translateX(0); }
+  }
+
+  @keyframes fadeOut {
+    to { opacity: 0; transform: translateX(100%); }
+  }
+
+  </style>
+</head>
+<body class="auth-loading">
+
+  <!-- Injected Header -->
+  <div id="header-container"></div>
+
+  <!-- Account Content -->
+  <main>
+    <div class="content-container">
+      <div class="card">
+        <h2>Account Details</h2>
+        <div class="form-group">
+          <label>Email</label>
+          <input type="email" id="email" readonly />
+        </div>
+        <div class="form-group">
+          <label>Full Name</label>
+          <input type="text" id="fullName" />
+        </div>
+        <div class="form-group">
+          <label>Phone Number</label>
+          <input type="text" id="phone" placeholder="+263..." />
+        </div>
+      </div>
+
+      <div class="card">
+        <h2>Change Password</h2>
+        <div class="form-group">
+          <label>Current Password</label>
+          <input type="password" id="currentPassword" />
+        </div>
+        <div class="form-group">
+          <label>New Password</label>
+          <input type="password" id="newPassword" />
+        </div>
+        <div class="form-group">
+          <label>Confirm New Password</label>
+          <input type="password" id="confirmPassword" />
+        </div>
+      </div>
+    </div>
+
+    <button class="save-btn" onclick="saveAccountDetails()">Save Changes</button>
+    <div id="toast-container"></div>
+  </main>
+
+  <!-- Injected Footer -->
+  <div id="footer-container"></div>
+
+  <!-- Firebase & Logic -->
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+    import { getAuth, updatePassword, EmailAuthProvider, reauthenticateWithCredential, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+    import { getFirestore, doc, getDoc, setDoc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyAZzKHkXOeiAZGcziTLUO4nnPjCaVPDoqE",
+      authDomain: "flexxcart-4eec7.firebaseapp.com",
+      projectId: "flexxcart-4eec7",
+      storageBucket: "flexxcart-4eec7.appspot.com",
+      messagingSenderId: "214282586265",
+      appId: "1:214282586265:web:b750a44367aa26d0e45008",
+      measurementId: "G-QPEWW4K5QF"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+    const db = getFirestore(app);
+
+    onAuthStateChanged(auth, async (user) => {
+      document.body.classList.remove("auth-loading");
+      if (user) {
+        document.getElementById("email").value = user.email;
+        const docSnap = await getDoc(doc(db, "users", user.uid));
+        if (docSnap.exists()) {
+          const data = docSnap.data();
+          document.getElementById("fullName").value = data.fullName || "";
+          document.getElementById("phone").value = data.phone || "";
+        }
+      } else {
+        window.location.href = "login.html";
+      }
+    });
+
+    window.logout = function () {
+      signOut(auth).then(() => {
+        localStorage.removeItem("cart");
+        window.location.reload();
+      }).catch((error) => {
+        console.error("Logout failed:", error.message);
+      });
+    };
+
+    window.saveAccountDetails = async function () {
+      const fullName = document.getElementById("fullName").value;
+      const phone = document.getElementById("phone").value;
+      const currentPassword = document.getElementById("currentPassword").value;
+      const newPassword = document.getElementById("newPassword").value;
+      const confirmPassword = document.getElementById("confirmPassword").value;
+      const user = auth.currentUser;
+
+      try {
+        await setDoc(doc(db, "users", user.uid), { fullName, phone }, { merge: true });
+
+        if (currentPassword && newPassword && confirmPassword) {
+          if (newPassword !== confirmPassword) {
+            return showToast("Passwords do not match.");
+          }
+          const credential = EmailAuthProvider.credential(user.email, currentPassword);
+          await reauthenticateWithCredential(user, credential);
+          await updatePassword(user, newPassword);
+          showToast("Password updated successfully.");
+        }
+
+        showToast("Account details saved.");
+        document.getElementById("currentPassword").value = "";
+        document.getElementById("newPassword").value = "";
+        document.getElementById("confirmPassword").value = "";
+      } catch (error) {
+        showToast("Error: " + error.message);
+      }
+    };
+
+    function showToast(message) {
+      const container = document.getElementById("toast-container");
+      const toast = document.createElement("div");
+      toast.className = "toast";
+      toast.innerText = message;
+      container.appendChild(toast);
+      setTimeout(() => toast.remove(), 3000);
+    }
+  </script>
+</body>
+</html>

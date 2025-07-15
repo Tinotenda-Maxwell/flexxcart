@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Flexxcart | Search</title>
+
+  <!-- Fonts & Styles -->
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="style.css" />
+  <link rel="stylesheet"
+        href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+
+  <!-- shared.js does Firebase init, header/footer inject, cart‐count updates -->
+  <script type="module" src="shared.js"></script>
+  <script src="inject.js" defer></script>
+
+  <style>
+    main { 
+      flex: 1; 
+      display: flex; 
+      flex-direction: column; 
+    }
+
+    .products-section { 
+      padding: 30px 5%;
+      margin-top: -10px; 
+    }
+    .products-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 20px;
+    }
+    .product-card {
+      background-color: #fff;
+      padding: 12px;
+      border-radius: 10px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+      text-align: center;
+      height: 200px;
+    }
+    .product-card img {
+      max-width: 100%;
+      height: 80px;
+      object-fit: contain;
+    }
+    .product-card h4 {
+      margin: 1px 0 2px;
+    }
+    .product-card p {
+      color: #555;
+      font-size: 0.9rem;
+      margin-top: -1px;
+    }
+
+    .btn-group { 
+      margin-top: 10px;
+      display: flex;
+      justify-content: center;
+      gap: 8px;
+    }
+
+    .product-card button {
+      padding: 6px 12px;
+      font-size: 0.85rem;
+      background-color: #f5b041;
+      color: white;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+
+    .product-card button:hover { background-color: #f5b041; }
+
+    .toast {
+      position: fixed; bottom: 20px; right: 20px;
+      background-color: #28a745; color: white;
+      padding: 12px 20px; border-radius: 8px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+      font-size: 0.9rem; z-index: 1000;
+      opacity: 0; animation: fadeInOut 3s forwards;
+    }
+    @keyframes fadeInOut {
+      0% { opacity: 0; transform: translateY(20px); }
+      10% { opacity: 1; transform: translateY(0); }
+      90% { opacity: 1; transform: translateY(0); }
+      100% { opacity: 0; transform: translateY(20px); }
+    }
+
+    @media (max-width: 1024px) {
+      .products-grid {
+        grid-template-columns: repeat(4, 1fr);
+      }
+
+      .product-card img{
+        max-width: 80px;
+      }
+    }
+
+    @media (max-width: 768px) {
+      .products-grid {
+        grid-template-columns: repeat(3, 1fr);
+      }
+    }
+
+    @media (max-width: 430px) {
+      .products-grid {
+        grid-template-columns: repeat(2, 1fr);
+      }
+
+      .btn-group button{
+        height: 30px;
+        font-size: 10px;
+        margin-top: -8px;
+      }
+    }
+
+
+
+    
+  </style>
+</head>
+
+<body class="auth-loading">
+  <!-- injected header -->
+  <div id="header-container"></div>
+
+  <main>
+    <section class="products-section">
+      <h2 style="color: #28a745;">Search Results</h2>
+      <div class="products-grid" id="searchResults">Loading...</div>
+    </section>
+  </main>
+
+  <!-- injected footer -->
+  <div id="footer-container"></div>
+
+  <!-- toast container -->
+  <div id="toastContainer"></div>
+
+  <script type="module">
+    import { db, auth, updateCartCount } from './shared.js';
+    import { collection, getDocs } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+    import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+
+    const resultsEl = document.getElementById("searchResults");
+    const toastContainer = document.getElementById("toastContainer");
+    const params = new URLSearchParams(window.location.search);
+    const rawQuery = (params.get("query")||"").trim().toLowerCase();
+
+    document.addEventListener("DOMContentLoaded", () => {
+      // 1) Clear loading state & update cart badge when auth resolves
+      onAuthStateChanged(auth, () => {
+        document.body.classList.remove("auth-loading");
+        updateCartCount();
+      });
+
+      // 2) Immediately kick off the search
+      if (!rawQuery) {
+        resultsEl.innerHTML = "<p>Please enter a search query.</p>";
+      } else {
+        doSearch(rawQuery);
+      }
+    });
+
+    async function doSearch(q) {
+      const snap = await getDocs(collection(db, "products"));
+      const found = [];
+      snap.forEach(d => {
+        const data = d.data();
+        const name = (data.name||"").toLowerCase();
+        const cat  = (data.category||"").toLowerCase();
+        if (name.includes(q) || cat.includes(q)) {
+          found.push({ id: d.id, ...data });
+        }
+      });
+
+      if (found.length === 0) {
+        resultsEl.innerHTML = "<p>No results found.</p>";
+        return;
+      }
+
+      resultsEl.innerHTML = found.map(p => `
+        <div class="product-card">
+          <img src="${p.image}" alt="${p.name}" />
+          <h4>${p.name}</h4>
+          <p>Price: $${parseFloat(p.price).toFixed(2)}</p>
+          <div class="btn-group">
+            <button onclick="addToCart('${p.id}','${p.name}')">Add to Cart</button>
+            <button onclick="buyNow('${p.id}')">Buy Now</button>
+          </div>
+        </div>
+      `).join("");
+    }
+
+    function showToast(msg) {
+      const t = document.createElement("div");
+      t.className = "toast";
+      t.textContent = msg;
+      toastContainer.append(t);
+      setTimeout(() => t.remove(), 3000);
+    }
+
+    window.addToCart = (id,name) => {
+      const cart = JSON.parse(localStorage.getItem("cart"))||[];
+      const idx  = cart.findIndex(x=>x.id===id);
+      if (idx>-1) cart[idx].quantity++;
+      else        cart.push({id,quantity:1});
+      localStorage.setItem("cart", JSON.stringify(cart));
+      document.dispatchEvent(new Event("cart-updated"));
+      showToast(`✔ ${name} added to cart`);
+    };
+
+    window.buyNow = id => {
+      localStorage.setItem("cart", JSON.stringify([{id,quantity:1}]));
+      document.dispatchEvent(new Event("cart-updated"));
+      location.href="cart.html";
+    };
+  </script>
+</body>
+</html>

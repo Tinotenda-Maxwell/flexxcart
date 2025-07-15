@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Flexxcart | Contact Us</title>
+  <link rel="stylesheet" href="style.css" />
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+  <script type="module" src="shared.js"></script>
+  <script src="inject.js" defer></script>
+
+  <style>
+    body {
+      background-color: #ffe6ff;
+    }
+
+    main {
+      max-width: 1100px;
+      margin: 40px auto;
+      padding: 0 20px;
+    }
+
+    .contact-wrapper {
+      display: flex;
+      gap: 40px;
+      justify-content: space-between;
+      align-items: flex-start;
+      flex-wrap: wrap;
+    }
+
+    .contact-card {
+      flex: 1;
+      max-width: 450px;
+      background-color: #ffffff;
+      padding: 30px;
+      border-radius: 12px;
+      box-shadow: 0 8px 20px rgba(0, 0, 0, 0.08);
+      box-sizing: border-box;
+    }
+
+    .contact-card h2 {
+      color: #28a745;
+      font-size: 2rem;
+      margin-bottom: 10px;
+    }
+
+    .contact-card p {
+      margin-top: 10px;
+    }
+
+    .contact-card form {
+      display: flex;
+      flex-direction: column;
+      gap: 15px;
+      margin-top: 20px;
+    }
+
+    .contact-card input,
+    .contact-card textarea {
+      padding: 10px;
+      border: 1px solid #ccc;
+      border-radius: 8px;
+      font-size: 1rem;
+      font-family: 'Poppins', sans-serif;
+      resize: vertical;
+    }
+
+    .contact-card button {
+      background-color: #28a745;
+      color: white;
+      padding: 10px 20px;
+      border: none;
+      border-radius: 8px;
+      font-size: 1rem;
+      font-weight: 600;
+      cursor: pointer;
+    }
+
+    .contact-card button:hover {
+      background-color: #218838;
+    }
+
+    .info-right {
+      flex: 1;
+      min-width: 280px;
+      padding: 30px;
+      background-color: #ffffff;
+      border-radius: 12px;
+      box-shadow: 0 8px 20px rgba(0, 0, 0, 0.08);
+      box-sizing: border-box;
+    }
+
+    .info-right h2 {
+      color: #28a745;
+      margin-bottom: 10px;
+    }
+
+    .info-right h3 {
+      color: #555;
+      margin-top: 25px;
+      margin-bottom: 8px;
+    }
+
+    .info-right a {
+      color: #28a745;
+      text-decoration: none;
+    }
+
+    .info-right a:hover {
+      text-decoration: underline;
+    }
+
+    /* Fix mobile menu overflow issue */
+    .mobile-nav {
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+      border-radius: 0 0 12px 12px;
+    }
+
+    .mobile-nav a {
+      color: #333 !important;
+    }
+
+    @media (max-width: 768px) {
+      .contact-wrapper {
+        flex-direction: column;
+        align-items: center;
+      }
+
+      .contact-card {
+        width: 400px;
+      }
+
+      .contact-card,
+      .info-right {
+        max-width: 100%;
+      }
+    }
+
+    @media (max-width: 430px) {
+      .contact-card h2 {
+        font-size: 20px;
+        margin-top: -10px;
+      }
+
+      .contact-card p {
+        font-size: 15px;
+      }
+
+      .contact-card {
+        width: 330px;
+      }
+
+      .info-right h2 {
+        font-size: 20px;
+        margin-top: -10px;
+      }
+
+      .info-right p {
+        font-size: 15px;
+      }
+
+      .contact-card button {
+        width: 170px;
+      }
+    }
+  </style>
+</head>
+
+<body class="auth-loading">
+  <!-- Injected Header -->
+  <div id="header-container"></div>
+
+  <main>
+    <div class="contact-wrapper">
+      <div class="contact-card">
+        <h2>Contact Us</h2>
+        <p>Have questions or feedback? Fill in the form and our team will get back to you shortly.</p>
+
+        <form action="#" method="POST">
+          <input type="text" name="name" placeholder="Your Name" required />
+          <input type="email" name="email" placeholder="Your Email" required />
+          <input type="text" name="subject" placeholder="Subject" />
+          <textarea name="message" rows="5" placeholder="Your Message" required></textarea>
+          <button type="submit">Send Message</button>
+        </form>
+      </div>
+
+      <!-- Right side: Info Block -->
+      <div class="info-right">
+        <h2>Why Reach Out?</h2>
+        <p>We're always here to help! Whether you have a question about your order, need product info, or want to partner with us—don’t hesitate to connect.</p>
+
+        <h3>Contact Info</h3>
+        <div class="contact-info">
+          <p><strong>Email:</strong> support@flexxcart.com</p>
+          <p><strong>Phone:</strong> +263 77 192 6517</p>
+          <p><strong>Address:</strong> 123 Freshmart Street, Harare, Zimbabwe</p>
+        </div>
+
+        <h3>Follow Us</h3>
+        <p>
+          <a href="#"><i class="fab fa-facebook"></i> Facebook</a><br>
+          <a href="#"><i class="fab fa-instagram"></i> Instagram</a><br>
+          <a href="#"><i class="fab fa-twitter"></i> Twitter</a>
+        </p>
+      </div>
+    </div>
+  </main>
+
+  <!-- Injected Footer -->
+  <div id="footer-container"></div>
+</body>
+</html>
