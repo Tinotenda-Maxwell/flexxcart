@@ -106,7 +106,8 @@ footer {
   text-align: center;
   padding: 20px;
   font-size: 0.9rem;
-  margin-top: 40px;
+  margin-top: auto;
+  bottom: 0;
 }
 
 /* Navigation and dropdowns */
