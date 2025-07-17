@@ -399,7 +399,7 @@
       subtotalBox.innerHTML = `
         <h2>Subtotal (${totalItems} item${totalItems > 1 ? 's' : ''})</h2>
         <p><strong>Total: $${total.toFixed(2)}</strong></p>
-        <button class="checkout-btn" onclick="location.href='checkout.html'">Proceed to Checkout</button>
+        <button class="checkout-btn" id="checkoutBtn">Proceed to Checkout</button>
         <div class="payment-methods">
           <img src="visa.png" alt="Visa">
           <img src="mastercard.png" alt="MasterCard">
@@ -453,14 +453,25 @@
       });
     }
 
+
     onAuthStateChanged(auth, (user) => {
       document.body.classList.remove("auth-loading");
-      if (!user) {
-        window.location.href = "login.html";
-      } else {
-        renderCart();
-      }
+      renderCart().then(() => {
+        const checkoutBtn = document.getElementById("checkoutBtn");
+        if (checkoutBtn) {
+          checkoutBtn.addEventListener("click", () => {
+            if (!auth.currentUser) {
+              // If not logged in, redirect to login with redirect param
+              window.location.href = "login.html?redirect=checkout.html";
+            } else {
+              window.location.href = "checkout.html";
+            }
+          });
+        }
+      });
     });
+
+
   </script>
 </body>
 </html>
