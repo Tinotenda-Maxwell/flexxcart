@@ -15,6 +15,9 @@
   <script type="module" src="shared.js"></script>
 
   <style>
+    html,body{
+      overflow-x: hidden;
+    }
     main {
       max-width: 1200px;
       margin: 30px auto;
@@ -53,12 +56,18 @@
     
     .item-details h3 {
       margin: 0 0 10px;
+      white-space: nowrap;           /* Prevents text from breaking into multiple lines */
+      overflow: hidden;              /* Hides anything beyond container */
+      text-overflow: ellipsis;       /* Adds "..." when text overflows */
+      max-width: 100px; 
     }
 
     .item-details p {
       color: #555;
       margin-top: -36px;
       margin-bottom: 40px;
+      margin-left: 300px;
+      font-weight: bold;
 
     }
 
@@ -143,7 +152,8 @@
 
     @media (max-width: 768px) {
       main {
-        flex-direction: row;
+        flex-direction: column;
+        align-items: center;
       }
 
       p{
@@ -151,13 +161,14 @@
       }
 
       .cart-items{
-        width: 350px;
+        width: 450px;
       }
 
       .cart-items p {
-        margin-left: 110px;
+        margin-left: 210px;
         margin-top: -35px;
         font-size: 13px;
+        font-weight: bold;
       }
 
 
@@ -190,6 +201,7 @@
       }
 
       .subtotal-box{
+        margin-left: -180px;
         width: 270px;
       }
 
@@ -207,18 +219,61 @@
     @media (max-width: 490px) {
       main{
         flex-direction: column;
+        align-items: center;
+      }
+
+      .cart-items{
+        width: 380px;
+      }
+
+      .cart-items p{
+        margin-left: 155px;
+      }
+
+      .subtotal-box{
+        margin-left: 10px;
       }
     }
 
     @media (max-width: 391px) {
-      .cart-items{
-        width: 300px;
+
+      main{
+        flex-direction: column;
+        align-items: center;
       }
 
+
+      .cart-items{
+        width: 100%;
+        max-width: 340px;
+      }
+
+      .cart-items img{
+        margin-left: -20px;
+      }
+
+      .item-details h3 {
+        margin: 0 0 10px;
+        margin-left: -10px;
+        white-space: nowrap;          
+        overflow: hidden;              
+        text-overflow: ellipsis;       
+        max-width: 100px; 
+
+      }
+
+
+
       .cart-items p {
-        margin-left: 80px;
-        margin-top: -35px;
+        margin-left: 130px;
+        margin-top: -32px;
         font-size: 12px;
+        font-weight: bold;
+      }
+
+      .quantity-controls{
+        justify-content: flex-start;
+        margin-left: -15px;
       }
 
       .quantity-controls button{
