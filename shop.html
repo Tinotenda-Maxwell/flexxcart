@@ -53,6 +53,12 @@
     }
     .product-card h4 {
       margin: 1px 0 2px;
+      white-space: nowrap;          
+      overflow: hidden;              
+      text-overflow: ellipsis; 
+      max-width: 185px;      
+
+         
     }
     .product-card p {
       color: #555;
@@ -113,6 +119,12 @@
         max-width: 80px;
       }
 
+      .product-card p{
+        max-width: 100%;
+        
+
+      }
+
     @media screen and (max-width: 768px) {
       .product-list {
         grid-template-columns: repeat(3, 1fr);
@@ -145,7 +157,15 @@
       }
 
       .product-card p {
-        margin-top: -5px;
+        margin-top: 10px;
+        margin-bottom: 20px;
+        font-size: 8px;
+      }
+
+      .product-card h4{
+        font-size: 11px;
+        margin-bottom: 10px;
+        max-width: 150px;
       }
 
       .button-group button{
