@@ -341,7 +341,8 @@
     let cart = [];
 
     async function renderCart() {
-      cart = JSON.parse(localStorage.getItem('cart')) || [];
+      cart = (JSON.parse(localStorage.getItem('cart')) || []).filter(item => item.quantity && item.quantity > 0);
+
       cartContainer.innerHTML = '';
       subtotalBox.innerHTML = '';
 
@@ -352,6 +353,7 @@
 
       let total = 0;
       let totalItems = 0;
+      const validCart = [];
 
       for (let i = 0; i < cart.length; i++) {
         const { id, quantity } = cart[i];
@@ -367,6 +369,9 @@
           total += parseFloat(itemTotal);
           totalItems += quantity;
 
+          // Add to valid cart
+          validCart.push({ id, quantity });
+
           cartContainer.innerHTML += `
             <div class="cart-item">
               <img src="${image}" alt="${name}">
@@ -375,16 +380,21 @@
                 <p>Price: $${price.toFixed(2)}</p>
                 <p>Subtotal: $${itemTotal}</p>
                 <div class="quantity-controls">
-                  <button class="decrease" data-index="${i}">–</button>
-                  <input type="number" min="1" value="${quantity}" data-index="${i}">
-                  <button class="increase" data-index="${i}">+</button>
+                  <button class="decrease" data-index="${validCart.length - 1}">–</button>
+                  <input type="number" min="1" value="${quantity}" data-index="${validCart.length - 1}">
+                  <button class="increase" data-index="${validCart.length - 1}">+</button>
                 </div>
-                <span class="remove" data-index="${i}">Remove</span>
+                <span class="remove" data-index="${validCart.length - 1}">Remove</span>
               </div>
             </div>
           `;
         }
       }
+
+      // Replace cart in storage with only valid entries
+      localStorage.setItem("cart", JSON.stringify(validCart));
+      cart = validCart;
+
 
       subtotalBox.innerHTML = `
         <h2>Subtotal (${totalItems} item${totalItems > 1 ? 's' : ''})</h2>

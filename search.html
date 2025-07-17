@@ -46,6 +46,10 @@
     }
     .product-card h4 {
       margin: 1px 0 2px;
+      white-space: nowrap;          
+      overflow: hidden;              
+      text-overflow: ellipsis; 
+      max-width: 185px;  
     }
     .product-card p {
       color: #555;
@@ -101,11 +105,39 @@
       .products-grid {
         grid-template-columns: repeat(3, 1fr);
       }
+       .product-card img{
+        max-width: 100px;
+      }
+
+      h2{
+        margin-top: -20px;
+      }
     }
 
     @media (max-width: 430px) {
       .products-grid {
         grid-template-columns: repeat(2, 1fr);
+      }
+
+      .product-card{
+        height: 185px;
+      }
+
+      .product-card img{
+        height: 70px;
+        max-width: 70px;
+      }
+
+      .product-card p {
+        margin-top: 10px;
+        margin-bottom: 20px;
+        font-size: 8px;
+      }
+
+      .product-card h4{
+        font-size: 11px;
+        margin-bottom: 10px;
+        max-width: 150px;
       }
 
       .btn-group button{
@@ -184,7 +216,7 @@
         <div class="product-card">
           <img src="${p.image}" alt="${p.name}" />
           <h4>${p.name}</h4>
-          <p>Price: $${parseFloat(p.price).toFixed(2)}</p>
+          <p><strong>Price: $${parseFloat(p.price).toFixed(2)}</strong></p>
           <div class="btn-group">
             <button onclick="addToCart('${p.id}','${p.name}')">Add to Cart</button>
             <button onclick="buyNow('${p.id}')">Buy Now</button>

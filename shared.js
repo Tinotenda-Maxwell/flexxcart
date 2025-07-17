@@ -43,6 +43,11 @@ function waitForHeaderAndBind() {
     const searchToggle = document.getElementById("searchToggle");
     const mobileSearchBar = document.getElementById("mobileSearchBar");
 
+    const desktopInput = document.getElementById("searchInput");
+    const desktopBtn = document.getElementById("searchBtn");
+    const mobileInput = document.getElementById("mobileSearchInput");
+    const mobileBtn = document.getElementById("mobileSearchBtn");
+
     if (
       loginBtn || userDropdown || mobileLoginBtn || mobileUserDropdown ||
       menuToggle || mobileUserIcon || mobileMenu || mobileDropdownMenu ||
@@ -53,7 +58,6 @@ function waitForHeaderAndBind() {
       // ✅ Auth state toggle
       onAuthStateChanged(auth, (user) => {
         document.body.classList.remove("auth-loading");
-
         if (user) {
           loginBtn && (loginBtn.style.display = "none");
           mobileLoginBtn && (mobileLoginBtn.style.display = "none");
@@ -65,71 +69,48 @@ function waitForHeaderAndBind() {
           userDropdown && (userDropdown.style.display = "none");
           mobileUserDropdown && (mobileUserDropdown.style.display = "none");
         }
-
         updateCartCount();
       });
 
-      // ✅ Toggle mobile menu
-      if (menuToggle && mobileMenu) {
-        menuToggle.addEventListener("click", (e) => {
-          e.stopPropagation();
-          mobileMenu.classList.toggle("show");
+      // ✅ Toggle menus/dropdowns
+      menuToggle?.addEventListener("click", (e) => {
+        e.stopPropagation();
+        mobileMenu.classList.toggle("show");
+        mobileDropdownMenu?.classList.remove("show");
+        userDropdownContent?.classList.remove("show");
+        if (mobileSearchBar) mobileSearchBar.style.display = "none";
+      });
 
-          // Close others
-          mobileDropdownMenu?.classList.remove("show");
-          userDropdownContent?.classList.remove("show");
-          if (mobileSearchBar) mobileSearchBar.style.display = "none";
-        });
-      }
+      mobileUserIcon?.addEventListener("click", (e) => {
+        e.stopPropagation();
+        mobileDropdownMenu.classList.toggle("show");
+        mobileMenu?.classList.remove("show");
+        userDropdownContent?.classList.remove("show");
+        if (mobileSearchBar) mobileSearchBar.style.display = "none";
+      });
 
-      // ✅ Toggle mobile user dropdown
-      if (mobileUserIcon && mobileDropdownMenu) {
-        mobileUserIcon.addEventListener("click", (e) => {
-          e.stopPropagation();
-          mobileDropdownMenu.classList.toggle("show");
+      userIcon?.addEventListener("click", (e) => {
+        e.stopPropagation();
+        userDropdownContent.classList.toggle("show");
+        mobileDropdownMenu?.classList.remove("show");
+        mobileMenu?.classList.remove("show");
+        if (mobileSearchBar) mobileSearchBar.style.display = "none";
+      });
 
-          // Close others
-          mobileMenu?.classList.remove("show");
-          userDropdownContent?.classList.remove("show");
-          if (mobileSearchBar) mobileSearchBar.style.display = "none";
-        });
-      }
+      searchToggle?.addEventListener("click", (e) => {
+        e.stopPropagation();
+        const isVisible = mobileSearchBar.style.display === "flex";
+        mobileSearchBar.style.display = isVisible ? "none" : "flex";
+        mobileMenu?.classList.remove("show");
+        mobileDropdownMenu?.classList.remove("show");
+        userDropdownContent?.classList.remove("show");
+      });
 
-      // ✅ Toggle desktop user dropdown
-      if (userIcon && userDropdownContent) {
-        userIcon.addEventListener("click", (e) => {
-          e.stopPropagation();
-          userDropdownContent.classList.toggle("show");
-
-          // Close others
-          mobileDropdownMenu?.classList.remove("show");
-          mobileMenu?.classList.remove("show");
-          if (mobileSearchBar) mobileSearchBar.style.display = "none";
-        });
-      }
-
-      // ✅ Toggle mobile search bar
-      if (searchToggle && mobileSearchBar) {
-        searchToggle.addEventListener("click", (e) => {
-          e.stopPropagation();
-          const isVisible = mobileSearchBar.style.display === "flex";
-          mobileSearchBar.style.display = isVisible ? "none" : "flex";
-
-          // Close others
-          mobileMenu?.classList.remove("show");
-          mobileDropdownMenu?.classList.remove("show");
-          userDropdownContent?.classList.remove("show");
-        });
-      }
-
-      // ✅ Outside click to close dropdowns & menu & search
       document.addEventListener("click", (e) => {
         const isMenuClick = mobileMenu?.contains(e.target) || menuToggle?.contains(e.target);
         const isUserClick =
-          mobileDropdownMenu?.contains(e.target) ||
-          mobileUserIcon?.contains(e.target) ||
-          userDropdownContent?.contains(e.target) ||
-          userIcon?.contains(e.target);
+          mobileDropdownMenu?.contains(e.target) || mobileUserIcon?.contains(e.target) ||
+          userDropdownContent?.contains(e.target) || userIcon?.contains(e.target);
         const isSearchClick = mobileSearchBar?.contains(e.target) || searchToggle?.contains(e.target);
 
         if (!isMenuClick) mobileMenu?.classList.remove("show");
@@ -141,6 +122,37 @@ function waitForHeaderAndBind() {
           mobileSearchBar.style.display = "none";
         }
       });
+
+      // ✅ Search input handling — now works
+      if (desktopBtn && desktopInput) {
+        desktopBtn.addEventListener("click", (e) => {
+          e.preventDefault();
+          const query = desktopInput.value.trim();
+          if (query) window.location.href = `search.html?query=${encodeURIComponent(query)}`;
+        });
+
+        desktopInput.addEventListener("keypress", (e) => {
+          if (e.key === "Enter") {
+            e.preventDefault();
+            desktopBtn.click();
+          }
+        });
+      }
+
+      if (mobileBtn && mobileInput) {
+        mobileBtn.addEventListener("click", (e) => {
+          e.preventDefault();
+          const query = mobileInput.value.trim();
+          if (query) window.location.href = `search.html?query=${encodeURIComponent(query)}`;
+        });
+
+        mobileInput.addEventListener("keypress", (e) => {
+          if (e.key === "Enter") {
+            e.preventDefault();
+            mobileBtn.click();
+          }
+        });
+      }
     }
   }, 100);
 }
@@ -204,43 +216,7 @@ window.logout = function () {
 };
 
 // ✅ Search input handling for both desktop and mobile
-document.addEventListener("DOMContentLoaded", () => {
-  const desktopInput = document.getElementById("searchInput");
-  const desktopBtn = document.getElementById("searchBtn");
 
-  const mobileInput = document.getElementById("mobileSearchInput");
-  const mobileBtn = document.getElementById("mobileSearchBtn");
-
-  if (desktopBtn && desktopInput) {
-    desktopBtn.addEventListener("click", (e) => {
-      e.preventDefault();
-      const query = desktopInput.value.trim();
-      if (query) window.location.href = `search.html?query=${encodeURIComponent(query)}`;
-    });
-
-    desktopInput.addEventListener("keypress", (e) => {
-      if (e.key === "Enter") {
-        e.preventDefault();
-        desktopBtn.click();
-      }
-    });
-  }
-
-  if (mobileBtn && mobileInput) {
-    mobileBtn.addEventListener("click", (e) => {
-      e.preventDefault();
-      const query = mobileInput.value.trim();
-      if (query) window.location.href = `search.html?query=${encodeURIComponent(query)}`;
-    });
-
-    mobileInput.addEventListener("keypress", (e) => {
-      if (e.key === "Enter") {
-        e.preventDefault();
-        mobileBtn.click();
-      }
-    });
-  }
-});
 
 
 // ✅ Init everything
