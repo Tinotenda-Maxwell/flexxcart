@@ -39,6 +39,14 @@ nav {
   display: none;
 }
 
+:target::before {
+  content: "";
+  display: block;
+  height: 80px; /* height of your sticky header */
+  margin-top: -80px; /* same as above, negated */
+}
+
+
 .menu-toggle{
   width: -20px;
   margin-left: 5px;

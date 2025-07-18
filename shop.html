@@ -237,6 +237,8 @@
       for (const category in productsByCategory) {
         const section = document.createElement("div");
         section.className = "category-section";
+        section.id = category.toLowerCase().replace(/\s+/g, '-'); // Add an ID from category name
+
 
         const title = document.createElement("h3");
         title.textContent = category.charAt(0).toUpperCase() + category.slice(1);
@@ -307,7 +309,19 @@
           location.href = "cart.html";
         };
       });
+
+      // Scroll to category from hash (after rendering all categories)
+      const hash = window.location.hash.substring(1);
+      if (hash) {
+        const targetSection = document.getElementById(hash);
+        if (targetSection) {
+          const yOffset = -80; // adjust to match your header height
+          const y = targetSection.getBoundingClientRect().top + window.pageYOffset + yOffset;
+          window.scrollTo({ top: y, behavior: "smooth" });
+        }
+      }
     }
+
 
     async function loadProducts() {
       try {
@@ -334,6 +348,7 @@
         productList.innerHTML = `<p style="color:red;">Failed to load products.</p>`;
       }
     }
+
 
     // Wait for auth, then load products
     onAuthStateChanged(auth, user => {
