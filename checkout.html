@@ -486,7 +486,6 @@
     addressSelect.addEventListener('click', () => {
       // If only one option and it's the "no saved addresses" message
       if (addressSelect.options.length === 1 && addressSelect.options[0].disabled) {
-        showToast('You need to add a delivery address first.');
         setTimeout(() => {
           window.location.href = 'saved_address.html';
         }, 1500); // Wait briefly so toast shows first
