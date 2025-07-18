@@ -337,6 +337,10 @@ nav a:hover {
     margin-top: -12px;
   }
 
+  footer{
+    font-size: 12px;
+  }
+
   .logo-section h1 {
     font-size: 28px !important;
   }
