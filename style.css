@@ -26,7 +26,7 @@ header {
   padding: 15px 20px;
   flex-wrap: wrap;
   position: relative;
-  margin-top: -15px;
+  margin-top: 8px;
 }
 
 /* Default visibility for desktop */
@@ -235,7 +235,7 @@ nav a:hover {
 #mobileUserMenu {
   display: none;
   align-items: center;
-  text-align: center;
+  text-align: left;
   margin-top: -35px;
 }
 #mobileMenu.show,
