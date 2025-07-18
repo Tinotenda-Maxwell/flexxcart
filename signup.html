@@ -219,7 +219,6 @@
     import { getAuth, createUserWithEmailAndPassword, updateProfile } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
     import { getFirestore, doc, setDoc, getDoc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
-
     const firebaseConfig = {
       apiKey: "AIzaSyAZzKHkXOeiAZGcziTLUO4nnPjCaVPDoqE",
       authDomain: "flexxcart-4eec7.firebaseapp.com",
@@ -302,7 +301,6 @@
         const user = userCredential.user;
 
         await updateProfile(user, { displayName: username });
-        await sendEmailVerification(user);
 
         await setDoc(doc(db, "users", user.uid), {
           uid: user.uid,
